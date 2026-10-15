@@ -1,7 +1,12 @@
 const CHAVE_CONTADOR = "contadorAprovacao";
+const CHAVE_HISTORICO = "historicoContadorAprovacao";
 
 
+/**
+ * Obtém a aba ativa do Preserve CEDAE.
+ */
 async function obterAbaPreserve() {
+
   const abas = await chrome.tabs.query({
     active: true,
     currentWindow: true
@@ -24,45 +29,181 @@ async function obterAbaPreserve() {
 }
 
 
-async function atualizarContador() {
+/**
+ * Obtém contador e histórico da página.
+ */
+async function obterDados() {
+
+  const aba = await obterAbaPreserve();
+
+  if (!aba) {
+    return {
+      contador: 0,
+      historico: []
+    };
+  }
+
+
+  const resultado =
+    await chrome.scripting.executeScript({
+
+      target: {
+        tabId: aba.id
+      },
+
+      func: (chaveContador, chaveHistorico) => {
+
+        const contador =
+          localStorage.getItem(chaveContador) || "0";
+
+
+        let historico = [];
+
+        try {
+
+          const salvo =
+            localStorage.getItem(chaveHistorico);
+
+          if (salvo) {
+            historico = JSON.parse(salvo);
+          }
+
+        } catch (erro) {
+
+          historico = [];
+        }
+
+
+        return {
+          contador: Number.parseInt(
+            contador,
+            10
+          ),
+
+          historico: historico
+        };
+      },
+
+      args: [
+        CHAVE_CONTADOR,
+        CHAVE_HISTORICO
+      ]
+
+    });
+
+
+  return (
+    resultado?.[0]?.result || {
+      contador: 0,
+      historico: []
+    }
+  );
+}
+
+
+/**
+ * Atualiza o contador e o histórico na tela.
+ */
+async function atualizarTela() {
 
   const contadorElemento =
     document.getElementById("contador");
 
-  try {
+  const historicoElemento =
+    document.getElementById("historico");
 
-    const aba = await obterAbaPreserve();
 
-    if (!aba) {
-      contadorElemento.textContent = "0";
+try {
+
+    const dados =
+      await obterDados();
+
+
+    // ---------------------------------------------
+    // Contador
+    // ---------------------------------------------
+
+    contadorElemento.textContent =
+      dados.contador;
+
+
+    // ---------------------------------------------
+    // Histórico
+    // ---------------------------------------------
+
+    historicoElemento.innerHTML = "";
+
+
+    if (
+      !dados.historico ||
+      dados.historico.length === 0
+    ) {
+
+      const linha =
+        document.createElement("tr");
+
+      const coluna =
+        document.createElement("td");
+
+      coluna.colSpan = 2;
+
+      coluna.className =
+        "sem-registros";
+
+      coluna.textContent =
+        "Nenhum registro.";
+
+      linha.appendChild(coluna);
+
+      historicoElemento.appendChild(linha);
+
       return;
     }
 
 
-    const resultado =
-      await chrome.scripting.executeScript({
-        target: {
-          tabId: aba.id
-        },
-
-        func: (chave) => {
-          return localStorage.getItem(chave) || "0";
-        },
-
-        args: [CHAVE_CONTADOR]
-      });
+    // Mais recente primeiro
+    const historico =
+      [...dados.historico].reverse();
 
 
-    const contador =
-      resultado?.[0]?.result || "0";
+    historico.forEach((registro) => {
+
+      const linha =
+        document.createElement("tr");
 
 
-    contadorElemento.textContent = contador;
+      const colunaIdentificador =
+        document.createElement("td");
+
+      colunaIdentificador.textContent =
+        registro.identificadorUnico || "";
+
+
+      const colunaDataHora =
+        document.createElement("td");
+
+      colunaDataHora.textContent =
+        registro.dataHora || "";
+
+
+      linha.appendChild(
+        colunaIdentificador
+      );
+
+      linha.appendChild(
+        colunaDataHora
+      );
+
+
+      historicoElemento.appendChild(
+        linha
+      );
+    });
 
   } catch (erro) {
 
     console.error(
-      "[Contador SAFE] Erro ao obter contador:",
+      "[Contador SAFE] Erro ao atualizar tela:",
       erro
     );
 
@@ -71,11 +212,16 @@ async function atualizarContador() {
 }
 
 
-async function zerarContador() {
+/**
+ * Zera contador e histórico.
+ */
+async function zerarDados() {
 
   try {
 
-    const aba = await obterAbaPreserve();
+    const aba =
+      await obterAbaPreserve();
+
 
     if (!aba) {
       return;
@@ -83,35 +229,60 @@ async function zerarContador() {
 
 
     await chrome.scripting.executeScript({
+
       target: {
         tabId: aba.id
       },
 
-      func: (chave) => {
-        localStorage.setItem(chave, "0");
+      func: (
+        chaveContador,
+        chaveHistorico
+      ) => {
+
+        localStorage.setItem(
+          chaveContador,
+          "0"
+        );
+
+        localStorage.setItem(
+          chaveHistorico,
+          JSON.stringify([])
+        );
+
       },
 
-      args: [CHAVE_CONTADOR]
+      args: [
+        CHAVE_CONTADOR,
+        CHAVE_HISTORICO
+      ]
+
     });
 
 
-    atualizarContador();
+    await atualizarTela();
 
   } catch (erro) {
 
     console.error(
-      "[Contador SAFE] Erro ao zerar contador:",
+      "[Contador SAFE] Erro ao zerar dados:",
       erro
     );
   }
 }
 
 
+/**
+ * Botão Zerar.
+ */
 document
   .getElementById("zerar")
   .addEventListener(
     "click",
-    zerarContador
+    zerarDados
   );
 
-atualizarContador();
+
+/**
+ * Inicialização.
+ */
+atualizarTela();
