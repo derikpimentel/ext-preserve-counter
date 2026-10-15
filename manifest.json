@@ -1,8 +1,25 @@
 {
-  "name": "SAFE Counter",
-  "description": "Extensão para contagem de produção de metadados.",
-  "version": "1.0",
   "manifest_version": 3,
+  "name": "Contador de Acionamentos SAFE",
+  "version": "1.0.0",
+  "description": "Conta quantas vezes o botão Sim é acionado no PreserveHub.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://preserve.cedae.com.br/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://preserve.cedae.com.br/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "Logo_SAFE.png"
