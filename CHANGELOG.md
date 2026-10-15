@@ -1,0 +1,42 @@
+# Changelog
+
+Este arquivo registra as mudanças relevantes do Contador SAFE ao longo do desenvolvimento.
+
+O formato segue uma organização inspirada no Keep a Changelog. As entradas descrevem a evolução funcional do projeto; não significam, necessariamente, que cada funcionalidade tenha sido validada em todos os cenários.
+
+## [Em desenvolvimento]
+
+### Adicionado
+
+- Estrutura inicial da extensão baseada no Chrome Extensions Manifest V3.
+- Popup para apresentação do contador.
+- Funcionalidade de zerar o contador.
+- Identificação de interações relacionadas ao fluxo de envio para aprovação no PreserveHub.
+- Registro das confirmações identificadas.
+- Histórico contendo identificador único e data e hora do registro.
+- Indicador flutuante temporário com o total contabilizado.
+- Interface de histórico no popup.
+- Funcionalidade para limpar o contador e o histórico simultaneamente.
+
+### Em validação
+
+- Identificação correta do registro associado à confirmação.
+- Contagem sem duplicidade em interações repetidas.
+- Persistência e leitura consistente do contador e do histórico.
+- Exibição do histórico em ordem decrescente de data e hora.
+- Funcionamento do popup e da limpeza dos dados.
+- Integração entre os scripts de conteúdo, popup e processo em segundo plano, caso este último faça parte da arquitetura final.
+
+## Versão declarada no manifesto
+
+A versão `1.0.0` é a versão declarada no `manifest.json` durante esta etapa. A criação deste changelog não altera o número da versão.
+
+## Convenção de registro
+
+- **Adicionado:** novas funcionalidades.
+- **Alterado:** mudanças em funcionalidades existentes.
+- **Corrigido:** correções de erros.
+- **Removido:** funcionalidades retiradas.
+- **Em validação:** comportamentos que ainda precisam de confirmação prática.
+
+As entradas devem ser atualizadas conforme as alterações reais do código e os resultados dos testes.
