@@ -49,6 +49,15 @@ Na implementação atualmente discutida, o contador e o histórico são armazena
 - `contadorAprovacao`
 - `historicoContadorAprovacao`
 
+Os registros do histórico incluem quatro campos:
+
+| Campo	| Finalidade |
+|---|---|
+| `identificadorUnico` | Identifica o registro no PreserveHub. |
+| `dataHora` | Registra a data e hora da confirmação. |
+| `repositorioArquivistico` | Identifica o repositório associado. |
+| `nomeUsuario` | Registra o nome de usuário identificado na página. |
+
 O popup utiliza a permissão de execução de scripts para consultar e alterar esses dados na aba compatível. Por isso, seu funcionamento depende da disponibilidade de uma aba do PreserveHub.
 
 ## Estrutura do projeto

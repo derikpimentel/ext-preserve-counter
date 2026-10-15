@@ -3,6 +3,19 @@ const CHAVE_HISTORICO = "historicoContadorAprovacao";
 
 
 /**
+ * Normaliza texto.
+ */
+function normalizarTexto(texto) {
+  return (texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+
+/**
  * Obtém a aba ativa do Preserve CEDAE.
  */
 async function obterAbaPreserve() {
@@ -30,7 +43,8 @@ async function obterAbaPreserve() {
 
 
 /**
- * Obtém contador e histórico da página.
+ * Obtém contador, histórico, usuário
+ * e repositório da página atual.
  */
 async function obterDados() {
 
@@ -39,7 +53,9 @@ async function obterDados() {
   if (!aba) {
     return {
       contador: 0,
-      historico: []
+      historico: [],
+      usuario: "Não identificado",
+      repositorio: "Não identificado"
     };
   }
 
@@ -53,9 +69,17 @@ async function obterDados() {
 
       func: (chaveContador, chaveHistorico) => {
 
+        // -----------------------------------------
+        // Contador
+        // -----------------------------------------
+
         const contador =
           localStorage.getItem(chaveContador) || "0";
 
+
+        // -----------------------------------------
+        // Histórico
+        // -----------------------------------------
 
         let historico = [];
 
@@ -74,13 +98,128 @@ async function obterDados() {
         }
 
 
+        // -----------------------------------------
+        // Normalização
+        // -----------------------------------------
+
+        function normalizarTexto(texto) {
+          return (texto || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase();
+        }
+
+
+        // -----------------------------------------
+        // Repositório
+        // -----------------------------------------
+
+        let repositorio =
+          "Não identificado";
+
+        const elementosRepositorio =
+          document.querySelectorAll(
+            "p.mud-typography.mud-typography-body2"
+          );
+
+        const prefixo =
+          "REPOSITORIO ARQUIVISTICO";
+
+
+        for (
+          const elemento
+          of elementosRepositorio
+        ) {
+
+          const texto =
+            elemento.textContent
+              .replace(/\s+/g, " ")
+              .trim();
+
+          const textoNormalizado =
+            normalizarTexto(texto);
+
+
+          if (
+            textoNormalizado.startsWith(
+              prefixo
+            )
+          ) {
+
+            const valor =
+              textoNormalizado
+                .substring(
+                  prefixo.length
+                )
+                .trim();
+
+            if (valor) {
+              repositorio = valor;
+            }
+
+            break;
+          }
+        }
+
+
+        // -----------------------------------------
+        // Usuário
+        // -----------------------------------------
+
+        let usuario =
+          "Não identificado";
+
+
+        for (
+          const elemento
+          of elementosRepositorio
+        ) {
+
+          const estilo =
+            (
+              elemento.getAttribute(
+                "style"
+              ) || ""
+            )
+              .replace(/\s+/g, "")
+              .toLowerCase();
+
+
+          if (
+            !estilo.includes(
+              "color:white"
+            )
+          ) {
+            continue;
+          }
+
+
+          const nome =
+            elemento.textContent
+              .replace(/\s+/g, " ")
+              .trim();
+
+
+          if (nome) {
+            usuario = nome;
+            break;
+          }
+        }
+
+
         return {
           contador: Number.parseInt(
             contador,
             10
           ),
 
-          historico: historico
+          historico: historico,
+
+          usuario: usuario,
+
+          repositorio: repositorio
         };
       },
 
@@ -95,19 +234,30 @@ async function obterDados() {
   return (
     resultado?.[0]?.result || {
       contador: 0,
-      historico: []
+      historico: [],
+      usuario: "Não identificado",
+      repositorio: "Não identificado"
     }
   );
 }
 
 
 /**
- * Atualiza o contador e o histórico na tela.
+ * Atualiza contador, usuário,
+ * repositório e histórico.
  */
 async function atualizarTela() {
 
   const contadorElemento =
     document.getElementById("contador");
+
+  const usuarioElemento =
+    document.getElementById("usuario-logado");
+
+  const repositorioElemento =
+    document.getElementById(
+      "repositorio-atual"
+    );
 
   const historicoElemento =
     document.getElementById("historico");
@@ -125,6 +275,22 @@ try {
 
     contadorElemento.textContent =
       dados.contador;
+
+
+    // -----------------------------------------
+    // Usuário
+    // -----------------------------------------
+
+    usuarioElemento.textContent =
+      dados.usuario;
+
+
+    // -----------------------------------------
+    // Repositório
+    // -----------------------------------------
+
+    repositorioElemento.textContent =
+      dados.repositorio;
 
 
     // ---------------------------------------------
@@ -208,6 +374,12 @@ try {
     );
 
     contadorElemento.textContent = "0";
+
+    usuarioElemento.textContent =
+      "Não identificado";
+
+    repositorioElemento.textContent =
+      "Não identificado";
   }
 }
 

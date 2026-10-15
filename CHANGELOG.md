@@ -17,6 +17,15 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Indicador flutuante temporário com o total contabilizado.
 - Interface de histórico no popup.
 - Funcionalidade para limpar o contador e o histórico simultaneamente.
+- Identificação do repositório arquivístico na página do PreserveHub.
+- Identificação do usuário exibido na página.
+- Inclusão do repositório e do usuário nos registros do histórico.
+- Exibição do usuário e do repositório atuais no popup.
+
+### Alterado
+
+- Ampliação dos dados apresentados no histórico de confirmações.
+- Atualização da interface do popup para apresentar informações contextuais.
 
 ### Em validação
 
@@ -26,6 +35,10 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Exibição do histórico em ordem decrescente de data e hora.
 - Funcionamento do popup e da limpeza dos dados.
 - Integração entre os scripts de conteúdo, popup e processo em segundo plano, caso este último faça parte da arquitetura final.
+- Precisão dos seletores utilizados para identificar usuário e repositório.
+- Preservação da grafia do nome do repositório.
+- Comportamento da contagem quando uma das informações não é encontrada.
+- Consistência da interface após zerar o contador e o histórico.
 
 ## Versão declarada no manifesto
 

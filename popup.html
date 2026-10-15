@@ -11,6 +11,7 @@
       padding: 20px;
       font-family: Arial, sans-serif;
       text-align: center;
+      box-sizing: border-box;
     }
 
     h2 {
@@ -28,6 +29,23 @@
       padding: 8px 16px;
       cursor: pointer;
       margin-bottom: 20px;
+    }
+
+    .informacoes {
+      text-align: left;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 6px;
+    }
+
+    .informacao {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    .rotulo {
+      font-weight: bold;
     }
 
     h3 {
@@ -63,6 +81,7 @@
     .sem-registros {
       padding: 15px;
       color: #777;
+      text-align: center;
     }
 
   </style>
@@ -79,7 +98,28 @@
     Zerar contador e histórico
   </button>
 
+
+  <div class="informacoes">
+
+    <div class="informacao">
+      <span class="rotulo">Usuário logado:</span>
+      <span id="usuario-logado">
+        Não identificado
+      </span>
+    </div>
+
+    <div class="informacao">
+      <span class="rotulo">Repositório atual:</span>
+      <span id="repositorio-atual">
+        Não identificado
+      </span>
+    </div>
+
+  </div>
+
+
   <h3>Histórico</h3>
+
 
   <div class="historico-container">
 
@@ -100,6 +140,7 @@
     </table>
 
   </div>
+  
 
   <script src="popup.js"></script>
 

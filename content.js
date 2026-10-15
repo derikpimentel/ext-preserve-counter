@@ -135,6 +135,110 @@ function ehBotaoSim(elemento) {
 
 
 /**
+ * Obtém o Identificador Único.
+ *
+ * Exemplo:
+ * PRT.001.xxxxxxxx/xxxx-xx
+ */
+function obterIdentificadorUnico() {
+  const elemento = document.querySelector(
+    "h6.mud-typography.mud-typography-subtitle1.truncate"
+  );
+
+  if (!elemento) {
+    return null;
+  }
+
+  const identificador = elemento.textContent
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return identificador || null;
+}
+
+
+/**
+ * Obtém o Repositório Arquivístico.
+ *
+ * Exemplo na página:
+ *
+ * REPOSITÓRIO ARQUIVÍSTICO CEDAE RJ
+ *
+ * Retorno:
+ *
+ * CEDAE RJ
+ */
+function obterRepositorioArquivistico() {
+  const elementos = document.querySelectorAll(
+    "p.mud-typography.mud-typography-body2"
+  );
+
+  const prefixo = "REPOSITORIO ARQUIVISTICO";
+
+  for (const elemento of elementos) {
+
+    const textoOriginal = elemento.textContent
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const textoNormalizado =
+      normalizarTexto(textoOriginal);
+
+    if (textoNormalizado.startsWith(prefixo)) {
+
+      const repositorio =
+        textoNormalizado
+          .substring(prefixo.length)
+          .trim();
+
+      return repositorio || null;
+    }
+  }
+
+  return null;
+}
+
+
+/**
+ * Obtém o nome do usuário logado.
+ *
+ * Procura o elemento:
+ *
+ * <p class="mud-typography mud-typography-body2"
+ *    style="color:white">
+ *   Derik Pimentel
+ * </p>
+ */
+function obterNomeUsuario() {
+  const elementos = document.querySelectorAll(
+    "p.mud-typography.mud-typography-body2"
+  );
+
+  for (const elemento of elementos) {
+
+    const estilo =
+      (elemento.getAttribute("style") || "")
+        .replace(/\s+/g, "")
+        .toLowerCase();
+
+    if (!estilo.includes("color:white")) {
+      continue;
+    }
+
+    const nome = elemento.textContent
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (nome) {
+      return nome;
+    }
+  }
+
+  return null;
+}
+
+
+/**
  * Formata a data/hora no padrão:
  *
  * DD/MM/AAAA HH:mm:ss
@@ -161,7 +265,12 @@ function obterDataHoraAtual() {
 /**
  * Registra uma nova contagem e cria o histórico.
  */
-function registrarContagem(identificadorUnico, dataHora) {
+function registrarContagem(
+  identificadorUnico,
+  dataHora,
+  repositorioArquivistico,
+  nomeUsuario
+) {
 
   // --------------------------------------------------
   // 1. Atualiza o contador
@@ -180,8 +289,6 @@ function registrarContagem(identificadorUnico, dataHora) {
     CHAVE_CONTADOR,
     String(novoContador)
   );
-
-  mostrarJanelaContador(novoContador); // Exibe a página temporária do contador.
 
 
   // --------------------------------------------------
@@ -216,7 +323,9 @@ function registrarContagem(identificadorUnico, dataHora) {
 
   historico.push({
     identificadorUnico: identificadorUnico,
-    dataHora: dataHora
+    dataHora: dataHora,
+    repositorioArquivistico: repositorioArquivistico,
+    nomeUsuario: nomeUsuario
   });
 
 
@@ -230,6 +339,13 @@ function registrarContagem(identificadorUnico, dataHora) {
   );
 
 
+  // ---------------------------------------------
+  // 5. Mostra contador
+  // ---------------------------------------------
+
+  mostrarJanelaContador(novoContador); // Exibe a página temporária do contador.
+
+
   console.log(
     `[Contador SAFE] Contagem: ${novoContador}`
   );
@@ -240,6 +356,14 @@ function registrarContagem(identificadorUnico, dataHora) {
 
   console.log(
     `[Contador SAFE] Data/Hora: ${dataHora}`
+  );
+
+  console.log(
+    "[Contador SAFE] Repositório:", repositorioArquivistico
+  );
+
+  console.log(
+    "[Contador SAFE] Usuário:", nomeUsuario
   );
 }
 
@@ -299,14 +423,26 @@ function registrarConfirmacao() {
 
 
   // --------------------------------------------------
-  // Obtém o identificador antes de contabilizar
+  // Obtém as informações antes de contabilizar
   // --------------------------------------------------
 
   const identificadorUnico =
-    obterIdentificadorUnico();
+    obterIdentificadorUnico() ||
+    "Não identificado";
+
+  const dataHora =
+    obterDataHoraAtual();
+
+  const repositorioArquivistico =
+    obterRepositorioArquivistico() ||
+    "Não identificado";
+
+  const nomeUsuario =
+    obterNomeUsuario() ||
+    "Não identificado";
 
 
-  if (!identificadorUnico) {
+  if (identificadorUnico == "Não identificado") {
 
     console.warn(
       "[Contador SAFE] Não foi possível localizar o Identificador Único."
@@ -315,13 +451,23 @@ function registrarConfirmacao() {
     return;
   }
 
+  if (repositorioArquivistico == "Não identificado") {
 
-  // --------------------------------------------------
-  // Obtém data/hora
-  // --------------------------------------------------
+    console.warn(
+      "[Contador SAFE] Não foi possível localizar o Repositório Arquivístico."
+    );
 
-  const dataHora =
-    obterDataHoraAtual();
+    return;
+  }
+
+  if (nomeUsuario == "Não identificado") {
+
+    console.warn(
+      "[Contador SAFE] Não foi possível localizar o Usuário."
+    );
+
+    return;
+  }
 
 
   // --------------------------------------------------
@@ -337,7 +483,9 @@ function registrarConfirmacao() {
 
   registrarContagem(
     identificadorUnico,
-    dataHora
+    dataHora,
+    repositorioArquivistico,
+    nomeUsuario
   );
 }
 
