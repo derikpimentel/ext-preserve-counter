@@ -2,9 +2,9 @@ let aguardandoConfirmacao = false;
 let ultimoClique = 0;
 let janelaContadorTimer = null;
 
+const CHAVE_DADOS_USUARIOS = "dadosContadorCedAprovacaoPorUsuario";
+
 const ID_JANELA_CONTADOR = "janela-contador";
-const CHAVE_CONTADOR = "contadorAprovacao";
-const CHAVE_HISTORICO = "historicoContadorAprovacao";
 
 
 /**
@@ -161,11 +161,9 @@ function obterIdentificadorUnico() {
  * Obtém o Repositório Arquivístico.
  *
  * Exemplo na página:
- *
  * REPOSITÓRIO ARQUIVÍSTICO CEDAE RJ
  *
  * Retorno:
- *
  * CEDAE RJ
  */
 function obterRepositorioArquivistico() {
@@ -263,7 +261,61 @@ function obterDataHoraAtual() {
 
 
 /**
- * Registra uma nova contagem e cria o histórico.
+ * Obtém o banco de dados de usuários.
+ */
+function obterDadosUsuarios() {
+
+  try {
+
+    const salvo =
+      localStorage.getItem(
+        CHAVE_DADOS_USUARIOS
+      );
+
+    if (!salvo) {
+      return {};
+    }
+
+    const dados =
+      JSON.parse(salvo);
+
+    if (
+      typeof dados !== "object" ||
+      dados === null ||
+      Array.isArray(dados)
+    ) {
+      return {};
+    }
+
+    return dados;
+
+  } catch (erro) {
+
+    console.error(
+      "[Contador SAFE] Erro ao ler dados por usuário:",
+      erro
+    );
+
+    return {};
+  }
+}
+
+
+/**
+ * Salva o banco de dados de usuários.
+ */
+function salvarDadosUsuarios(dados) {
+
+  localStorage.setItem(
+    CHAVE_DADOS_USUARIOS,
+    JSON.stringify(dados)
+  );
+}
+
+
+/**
+ * Registra uma nova contagem
+ * somente para o usuário atual.
  */
 function registrarContagem(
   identificadorUnico,
@@ -272,56 +324,57 @@ function registrarContagem(
   nomeUsuario
 ) {
 
-  // --------------------------------------------------
-  // 1. Atualiza o contador
-  // --------------------------------------------------
-
-  const valorAtual = localStorage.getItem(CHAVE_CONTADOR);
-
-  const contadorAtual = Number.parseInt(
-    valorAtual || "0",
-    10
-  );
-
-  const novoContador = contadorAtual + 1;
-
-  localStorage.setItem(
-    CHAVE_CONTADOR,
-    String(novoContador)
-  );
-
-
-  // --------------------------------------------------
-  // 2. Obtém o histórico existente
-  // --------------------------------------------------
-
-  let historico = [];
-
-  try {
-
-    const historicoSalvo =
-      localStorage.getItem(CHAVE_HISTORICO);
-
-    if (historicoSalvo) {
-      historico = JSON.parse(historicoSalvo);
-    }
-
-  } catch (erro) {
-
-    console.error(
-      "[Contador SAFE] Erro ao ler histórico:",
-      erro
+  const chaveUsuario =
+    normalizarTexto(
+      nomeUsuario
     );
 
-    historico = [];
+
+  if (!chaveUsuario) {
+
+    console.error(
+      "[Contador SAFE] Usuário não identificado."
+    );
+
+    return;
   }
 
 
+  const dadosUsuarios =
+    obterDadosUsuarios();
+
+
+  if (
+    !dadosUsuarios[chaveUsuario]
+  ) {
+
+    dadosUsuarios[chaveUsuario] = {
+      contador: 0,
+      historico: []
+    };
+  }
+
+
+  const dadosUsuario =
+    dadosUsuarios[chaveUsuario];
+
+
+  // ---------------------------------------------
+  // Incrementa apenas o contador deste usuário
+  // ---------------------------------------------
+
+  dadosUsuario.contador =
+    Number.parseInt(
+      dadosUsuario.contador || 0,
+      10
+    ) + 1;
+
+
   // --------------------------------------------------
-  // 3. Adiciona novo registro
+  // Adiciona novo registro deste usuário
   // --------------------------------------------------
 
-  historico.push({
+  dadosUsuario.historico.push({
     identificadorUnico: identificadorUnico,
     dataHora: dataHora,
     repositorioArquivistico: repositorioArquivistico,
@@ -330,20 +383,23 @@ function registrarContagem(
 
 
   // --------------------------------------------------
-  // 4. Salva o histórico
+  // Salva estrutura completa
   // --------------------------------------------------
 
-  localStorage.setItem(
-    CHAVE_HISTORICO,
-    JSON.stringify(historico)
+  dadosUsuarios[chaveUsuario] =
+    dadosUsuario;
+
+
+  salvarDadosUsuarios(
+    dadosUsuarios
   );
 
 
   // ---------------------------------------------
-  // 5. Mostra contador
+  // Mostra contador
   // ---------------------------------------------
 
-  mostrarJanelaContador(novoContador); // Exibe a página temporária do contador.
+  mostrarJanelaContador(dadosUsuario.contador); // Exibe a página temporária do contador.
 
 
   console.log(
@@ -478,7 +534,7 @@ function registrarConfirmacao() {
 
 
   // --------------------------------------------------
-  // Registra contador + histórico
+  // Registra somente para este usuário
   // --------------------------------------------------
 
   registrarContagem(

@@ -21,11 +21,15 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Identificação do usuário exibido na página.
 - Inclusão do repositório e do usuário nos registros do histórico.
 - Exibição do usuário e do repositório atuais no popup.
+- Estrutura de armazenamento de contadores e históricos organizada por usuário.
+- Consulta dos registros associados ao usuário atual no popup.
+- Limpeza individual do contador e do histórico do usuário atual.
 
 ### Alterado
 
 - Ampliação dos dados apresentados no histórico de confirmações.
 - Atualização da interface do popup para apresentar informações contextuais.
+- Substituição da estrutura global de contador e histórico por uma estrutura organizada por usuário.
 
 ### Em validação
 
@@ -39,6 +43,11 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Preservação da grafia do nome do repositório.
 - Comportamento da contagem quando uma das informações não é encontrada.
 - Consistência da interface após zerar o contador e o histórico.
+- Consistência da chave de armazenamento entre os scripts.
+- Correspondência entre o contador salvo e o contador apresentado no popup.
+- Isolamento dos dados entre usuários.
+- Tratamento de dados armazenados inválidos.
+- Tratamento ou migração dos registros criados pela versão anterior.
 
 ## Versão declarada no manifesto
 

@@ -14,6 +14,9 @@ O Contador SAFE tem como objetivo registrar as confirmações realizadas no flux
 - Exibição temporária de uma janela flutuante com o total contabilizado.
 - Exibição do contador e do histórico no popup da extensão.
 - Opção para zerar o contador e limpar o histórico.
+- Contador independente por usuário identificado.
+- Histórico de confirmações organizado por usuário.
+- Limpeza do contador e do histórico do usuário atual.
 
 > Observação: as funcionalidades devem ser consideradas implementadas no código, mas precisam ser verificadas na versão integrada antes de serem declaradas como plenamente validadas.
 

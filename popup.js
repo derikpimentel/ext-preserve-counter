@@ -1,5 +1,4 @@
-const CHAVE_CONTADOR = "contadorAprovacao";
-const CHAVE_HISTORICO = "historicoContadorAprovacao";
+const CHAVE_DADOS_USUARIOS = "dadosContadorAprovacaoPorUsuario";
 
 
 /**
@@ -43,8 +42,8 @@ async function obterAbaPreserve() {
 
 
 /**
- * Obtém contador, histórico, usuário
- * e repositório da página atual.
+ * Obtém dados do usuário atualmente logado
+ * e seus respectivos registros.
  */
 async function obterDados() {
 
@@ -67,35 +66,7 @@ async function obterDados() {
         tabId: aba.id
       },
 
-      func: (chaveContador, chaveHistorico) => {
-
-        // -----------------------------------------
-        // Contador
-        // -----------------------------------------
-
-        const contador =
-          localStorage.getItem(chaveContador) || "0";
-
-
-        // -----------------------------------------
-        // Histórico
-        // -----------------------------------------
-
-        let historico = [];
-
-        try {
-
-          const salvo =
-            localStorage.getItem(chaveHistorico);
-
-          if (salvo) {
-            historico = JSON.parse(salvo);
-          }
-
-        } catch (erro) {
-
-          historico = [];
-        }
+      func: (chaveDadosUsuarios) => {
 
 
         // -----------------------------------------
@@ -112,6 +83,13 @@ async function obterDados() {
         }
 
 
+        // Busca os elementos da página
+        const elementos =
+          document.querySelectorAll(
+            "p.mud-typography.mud-typography-body2"
+          );
+
+
         // -----------------------------------------
         // Repositório
         // -----------------------------------------
@@ -119,18 +97,13 @@ async function obterDados() {
         let repositorio =
           "Não identificado";
 
-        const elementosRepositorio =
-          document.querySelectorAll(
-            "p.mud-typography.mud-typography-body2"
-          );
-
         const prefixo =
           "REPOSITORIO ARQUIVISTICO";
 
 
         for (
           const elemento
-          of elementosRepositorio
+          of elementos
         ) {
 
           const texto =
@@ -174,7 +147,7 @@ async function obterDados() {
 
         for (
           const elemento
-          of elementosRepositorio
+          of elementos
         ) {
 
           const estilo =
@@ -209,13 +182,68 @@ async function obterDados() {
         }
 
 
+        // -----------------------------------------
+        // Banco de dados dos usuários
+        // -----------------------------------------
+
+        let dadosUsuarios =
+          {};
+
+
+        try {
+
+          const salvo =
+            localStorage.getItem(
+              chaveDadosUsuarios
+            );
+
+
+          if (salvo) {
+
+            dadosUsuarios =
+              JSON.parse(
+                salvo
+              );
+          }
+
+        } catch (erro) {
+
+          dadosUsuarios = {};
+        }
+
+
+        // -----------------------------------------
+        // Localiza dados deste usuário
+        // -----------------------------------------
+
+        const chaveUsuario =
+          normalizarTexto(
+            usuario
+          );
+
+
+        const dadosUsuario =
+          dadosUsuarios[
+            chaveUsuario
+          ] || {
+            contador: 0,
+            historico: []
+          };
+
+
         return {
+
           contador: Number.parseInt(
-            contador,
+            dadosUsuario.contador || 0,
             10
           ),
 
-          historico: historico,
+          historico:
+            Array.isArray(
+              dadosUsuario.historico
+            )
+              ? dadosUsuario.historico
+              : [],
 
           usuario: usuario,
 
@@ -224,8 +252,7 @@ async function obterDados() {
       },
 
       args: [
-        CHAVE_CONTADOR,
-        CHAVE_HISTORICO
+        CHAVE_DADOS_USUARIOS
       ]
 
     });
@@ -243,8 +270,7 @@ async function obterDados() {
 
 
 /**
- * Atualiza contador, usuário,
- * repositório e histórico.
+ * Atualiza a tela.
  */
 async function atualizarTela() {
 
@@ -385,7 +411,8 @@ try {
 
 
 /**
- * Zera contador e histórico.
+ * Zera contador e histórico,
+ * somente do usuário atual.
  */
 async function zerarDados() {
 
@@ -407,25 +434,156 @@ async function zerarDados() {
       },
 
       func: (
-        chaveContador,
-        chaveHistorico
+        chaveDadosUsuarios
       ) => {
 
-        localStorage.setItem(
-          chaveContador,
-          "0"
-        );
+        function normalizarTexto(
+          texto
+        ) {
+
+          return (texto || "")
+            .normalize("NFD")
+            .replace(
+              /[\u0300-\u036f]/g,
+              ""
+            )
+            .replace(
+              /\s+/g,
+              " "
+            )
+            .trim()
+            .toUpperCase();
+        }
+
+
+        // -----------------------------------------
+        // Localiza usuário atual
+        // -----------------------------------------
+
+        let usuario =
+          null;
+
+
+        const elementos =
+          document.querySelectorAll(
+            "p.mud-typography.mud-typography-body2"
+          );
+
+
+        for (
+          const elemento
+          of elementos
+        ) {
+
+          const estilo =
+            (
+              elemento.getAttribute(
+                "style"
+              ) || ""
+            )
+              .replace(
+                /\s+/g,
+                ""
+              )
+              .toLowerCase();
+
+
+          if (
+            !estilo.includes(
+              "color:white"
+            )
+          ) {
+            continue;
+          }
+
+
+          const nome =
+            elemento.textContent
+              .replace(
+                /\s+/g,
+                " "
+              )
+              .trim();
+
+
+          if (nome) {
+
+            usuario =
+              nome;
+
+            break;
+          }
+        }
+
+
+        if (!usuario) {
+          return;
+        }
+
+
+        const chaveUsuario =
+          normalizarTexto(
+            usuario
+          );
+
+
+        // -----------------------------------------
+        // Obtém dados existentes
+        // -----------------------------------------
+
+        let dadosUsuarios =
+          {};
+
+
+        try {
+
+          const salvo =
+            localStorage.getItem(
+              chaveDadosUsuarios
+            );
+
+
+          if (salvo) {
+
+            dadosUsuarios =
+              JSON.parse(
+                salvo
+              );
+          }
+
+        } catch (erro) {
+
+          dadosUsuarios = {};
+        }
+
+
+        // -----------------------------------------
+        // Zera somente este usuário
+        // -----------------------------------------
+
+        dadosUsuarios[
+          chaveUsuario
+        ] = {
+
+          contador: 0,
+
+          historico: []
+        };
+
 
         localStorage.setItem(
-          chaveHistorico,
-          JSON.stringify([])
+
+          chaveDadosUsuarios,
+
+          JSON.stringify(
+            dadosUsuarios
+          )
         );
 
       },
 
       args: [
-        CHAVE_CONTADOR,
-        CHAVE_HISTORICO
+        CHAVE_DADOS_USUARIOS
       ]
 
     });
