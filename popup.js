@@ -1,9 +1,44 @@
+// ============================================================
+// CONTADOR SAFE - POPUP
+// VERSÃO 1.0.0
+// CRIADO POR DERIK PIMENTEL
+// ============================================================
+
+const VERSAO = "1.0.0";
+
 const CHAVE_DADOS_USUARIOS = "dadosContadorAprovacaoPorUsuario";
 
 
-/**
- * Normaliza texto.
- */
+// ============================================================
+// ELEMENTOS
+// ============================================================
+
+const contadorElemento =
+    document.getElementById("contador");
+
+const contadorAprovacaoElemento =
+    document.getElementById("contador-aprovacao");
+
+const contadorVerificarElemento =
+    document.getElementById("contador-verificar");
+
+const usuarioElemento =
+    document.getElementById("usuario-logado");
+
+const repositorioElemento =
+    document.getElementById("repositorio-atual");
+
+const historicoElemento =
+    document.getElementById("historico");
+
+const botaoZerar =
+    document.getElementById("zerar");
+
+
+// ============================================================
+// NORMALIZAÇÃO
+// ============================================================
+
 function normalizarTexto(texto) {
   return (texto || "")
     .normalize("NFD")
@@ -14,605 +49,697 @@ function normalizarTexto(texto) {
 }
 
 
-/**
- * Obtém a aba ativa do Preserve CEDAE.
- */
-async function obterAbaPreserve() {
+function obterChaveUsuario(nomeUsuario) {
 
-  const abas = await chrome.tabs.query({
-    active: true,
-    currentWindow: true
-  });
-
-  if (!abas.length) {
-    return null;
-  }
-
-  const aba = abas[0];
-
-  if (
-    !aba.url ||
-    !aba.url.startsWith("https://preserve.cedae.com.br/")
-  ) {
-    return null;
-  }
-
-  return aba;
+    return normalizarTexto(nomeUsuario).toUpperCase();
 }
 
 
-/**
- * Obtém dados do usuário atualmente logado
- * e seus respectivos registros.
- */
-async function obterDados() {
+// ============================================================
+// OBTER DADOS DA PÁGINA
+// ============================================================
 
-  const aba = await obterAbaPreserve();
+async function obterDadosPagina() {
 
-  if (!aba) {
-    return {
-      contador: 0,
-      historico: [],
-      usuario: "Não identificado",
-      repositorio: "Não identificado"
-    };
-  }
-
-
-  const resultado =
-    await chrome.scripting.executeScript({
-
-      target: {
-        tabId: aba.id
-      },
-
-      func: (chaveDadosUsuarios) => {
-
-
-        // -----------------------------------------
-        // Normalização
-        // -----------------------------------------
-
-        function normalizarTexto(texto) {
-          return (texto || "")
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/\s+/g, " ")
-            .trim()
-            .toUpperCase();
-        }
-
-
-        // Busca os elementos da página
-        const elementos =
-          document.querySelectorAll(
-            "p.mud-typography.mud-typography-body2"
-          );
-
-
-        // -----------------------------------------
-        // Repositório
-        // -----------------------------------------
-
-        let repositorio =
-          "Não identificado";
-
-        const prefixo =
-          "REPOSITORIO ARQUIVISTICO";
-
-
-        for (
-          const elemento
-          of elementos
-        ) {
-
-          const texto =
-            elemento.textContent
-              .replace(/\s+/g, " ")
-              .trim();
-
-          const textoNormalizado =
-            normalizarTexto(texto);
-
-
-          if (
-            textoNormalizado.startsWith(
-              prefixo
-            )
-          ) {
-
-            const valor =
-              textoNormalizado
-                .substring(
-                  prefixo.length
-                )
-                .trim();
-
-            if (valor) {
-              repositorio = valor;
-            }
-
-            break;
-          }
-        }
-
-
-        // -----------------------------------------
-        // Usuário
-        // -----------------------------------------
-
-        let usuario =
-          "Não identificado";
-
-
-        for (
-          const elemento
-          of elementos
-        ) {
-
-          const estilo =
-            (
-              elemento.getAttribute(
-                "style"
-              ) || ""
-            )
-              .replace(/\s+/g, "")
-              .toLowerCase();
-
-
-          if (
-            !estilo.includes(
-              "color:white"
-            )
-          ) {
-            continue;
-          }
-
-
-          const nome =
-            elemento.textContent
-              .replace(/\s+/g, " ")
-              .trim();
-
-
-          if (nome) {
-            usuario = nome;
-            break;
-          }
-        }
-
-
-        // -----------------------------------------
-        // Banco de dados dos usuários
-        // -----------------------------------------
-
-        let dadosUsuarios =
-          {};
-
-
-        try {
-
-          const salvo =
-            localStorage.getItem(
-              chaveDadosUsuarios
-            );
-
-
-          if (salvo) {
-
-            dadosUsuarios =
-              JSON.parse(
-                salvo
-              );
-          }
-
-        } catch (erro) {
-
-          dadosUsuarios = {};
-        }
-
-
-        // -----------------------------------------
-        // Localiza dados deste usuário
-        // -----------------------------------------
-
-        const chaveUsuario =
-          normalizarTexto(
-            usuario
-          );
-
-
-        const dadosUsuario =
-          dadosUsuarios[
-            chaveUsuario
-          ] || {
-            contador: 0,
-            historico: []
-          };
-
-
-        return {
-
-          contador: Number.parseInt(
-            dadosUsuario.contador || 0,
-            10
-          ),
-
-          historico:
-            Array.isArray(
-              dadosUsuario.historico
-            )
-              ? dadosUsuario.historico
-              : [],
-
-          usuario: usuario,
-
-          repositorio: repositorio
-        };
-      },
-
-      args: [
-        CHAVE_DADOS_USUARIOS
-      ]
-
+    const abas = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
     });
 
 
-  return (
-    resultado?.[0]?.result || {
-      contador: 0,
-      historico: [],
-      usuario: "Não identificado",
-      repositorio: "Não identificado"
+    if (!abas || !abas.length) {
+        throw new Error("Aba ativa não encontrada.");
     }
-  );
-}
 
 
-/**
- * Atualiza a tela.
- */
-async function atualizarTela() {
-
-  const contadorElemento =
-    document.getElementById("contador");
-
-  const usuarioElemento =
-    document.getElementById("usuario-logado");
-
-  const repositorioElemento =
-    document.getElementById(
-      "repositorio-atual"
-    );
-
-  const historicoElemento =
-    document.getElementById("historico");
-
-
-try {
-
-    const dados =
-      await obterDados();
-
-
-    // ---------------------------------------------
-    // Contador
-    // ---------------------------------------------
-
-    contadorElemento.textContent =
-      dados.contador;
-
-
-    // -----------------------------------------
-    // Usuário
-    // -----------------------------------------
-
-    usuarioElemento.textContent =
-      dados.usuario;
-
-
-    // -----------------------------------------
-    // Repositório
-    // -----------------------------------------
-
-    repositorioElemento.textContent =
-      dados.repositorio;
-
-
-    // ---------------------------------------------
-    // Histórico
-    // ---------------------------------------------
-
-    historicoElemento.innerHTML = "";
+    const aba = abas[0];
 
 
     if (
-      !dados.historico ||
-      dados.historico.length === 0
+        !aba.url ||
+        !aba.url.startsWith(
+            "https://preserve.cedae.com.br/"
+        )
     ) {
 
-      const linha =
-        document.createElement("tr");
-
-      const coluna =
-        document.createElement("td");
-
-      coluna.colSpan = 2;
-
-      coluna.className =
-        "sem-registros";
-
-      coluna.textContent =
-        "Nenhum registro.";
-
-      linha.appendChild(coluna);
-
-      historicoElemento.appendChild(linha);
-
-      return;
+        throw new Error(
+            "A página atual não é o PreserveHub."
+        );
     }
 
 
-    // Mais recente primeiro
-    const historico =
-      [...dados.historico].reverse();
+    const resultado =
+        await chrome.scripting.executeScript({
+
+            target: {
+                tabId: aba.id
+            },
+
+            func: () => {
+
+                function normalizarTexto(texto) {
+
+                    return (texto || "")
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .replace(/\s+/g, " ")
+                        .trim();
+                }
 
 
-    historico.forEach((registro) => {
+                function obterChaveUsuario(nomeUsuario) {
 
-      const linha =
-        document.createElement("tr");
-
-
-      const colunaIdentificador =
-        document.createElement("td");
-
-      colunaIdentificador.textContent =
-        registro.identificadorUnico || "";
+                    return normalizarTexto(
+                        nomeUsuario
+                    ).toUpperCase();
+                }
 
 
-      const colunaDataHora =
-        document.createElement("td");
+                // ============================================
+                // USUÁRIO
+                // ============================================
 
-      colunaDataHora.textContent =
-        registro.dataHora || "";
-
-
-      linha.appendChild(
-        colunaIdentificador
-      );
-
-      linha.appendChild(
-        colunaDataHora
-      );
+                let nomeUsuario =
+                    "Usuário não identificado";
 
 
-      historicoElemento.appendChild(
-        linha
-      );
-    });
+                const elementos =
+                    document.querySelectorAll(
+                        "p.mud-typography.mud-typography-body2"
+                    );
 
-  } catch (erro) {
 
-    console.error(
-      "[Contador SAFE] Erro ao atualizar tela:",
-      erro
-    );
+                for (const elemento of elementos) {
 
-    contadorElemento.textContent = "0";
+                    const estilo =
+                        elemento.getAttribute("style") || "";
 
-    usuarioElemento.textContent =
-      "Não identificado";
 
-    repositorioElemento.textContent =
-      "Não identificado";
-  }
+                    if (
+                        estilo
+                            .toLowerCase()
+                            .includes("color:white")
+                    ) {
+
+                        const nome =
+                            elemento.textContent.trim();
+
+
+                        if (nome) {
+
+                            nomeUsuario = nome;
+
+                            break;
+                        }
+                    }
+                }
+
+
+                // ============================================
+                // REPOSITÓRIO
+                // ============================================
+
+                let repositorio =
+                    "Não identificado";
+
+
+                for (const elemento of elementos) {
+
+                    const texto =
+                        elemento.textContent.trim();
+
+
+                    const normalizado =
+                        normalizarTexto(texto)
+                            .toUpperCase();
+
+
+                    if (
+                        normalizado.startsWith(
+                            "REPOSITORIO ARQUIVISTICO"
+                        )
+                    ) {
+
+                        repositorio =
+                            texto.replace(
+                                /^REPOSITÓRIO ARQUIVÍSTICO\s*/i,
+                                ""
+                            ).trim();
+
+                        break;
+                    }
+                }
+
+
+                // ============================================
+                // LOCAL STORAGE
+                // ============================================
+
+                let dadosUsuarios = {};
+
+
+                try {
+
+                    const dadosSalvos =
+                        localStorage.getItem(
+                            "dadosContadorAprovacaoPorUsuario"
+                        );
+
+
+                    if (dadosSalvos) {
+
+                        dadosUsuarios =
+                            JSON.parse(dadosSalvos);
+                    }
+
+                } catch (erro) {
+
+                    console.error(
+                        "Erro ao ler localStorage:",
+                        erro
+                    );
+                }
+
+
+                const chaveUsuario =
+                    obterChaveUsuario(nomeUsuario);
+
+
+                const dadosUsuario =
+                    dadosUsuarios[chaveUsuario] || {
+
+                        contadorAprovacao: 0,
+
+                        contadorVerificar: 0,
+
+                        historico: []
+                    };
+
+
+                // ============================================
+                // COMPATIBILIDADE
+                // ============================================
+
+                if (
+                    typeof dadosUsuario.contadorAprovacao
+                    !== "number"
+                ) {
+
+                    dadosUsuario.contadorAprovacao = 0;
+                }
+
+
+                if (
+                    typeof dadosUsuario.contadorVerificar
+                    !== "number"
+                ) {
+
+                    dadosUsuario.contadorVerificar = 0;
+                }
+
+
+                if (
+                    !Array.isArray(
+                        dadosUsuario.historico
+                    )
+                ) {
+
+                    dadosUsuario.historico = [];
+                }
+
+
+                return {
+
+                    nomeUsuario,
+
+                    repositorio,
+
+                    dadosUsuario
+                };
+            }
+
+        });
+
+
+    if (!resultado || !resultado.length) {
+
+        throw new Error(
+            "Não foi possível obter os dados da página."
+        );
+    }
+
+
+    return resultado[0].result;
 }
 
 
-/**
- * Zera contador e histórico,
- * somente do usuário atual.
- */
-async function zerarDados() {
+// ============================================================
+// ATUALIZAR POPUP
+// ============================================================
 
-  try {
+async function atualizarPopup() {
 
-    const aba =
-      await obterAbaPreserve();
+    try {
 
-
-    if (!aba) {
-      return;
-    }
+        const dados =
+            await obterDadosPagina();
 
 
-    await chrome.scripting.executeScript({
+        const dadosUsuario =
+            dados.dadosUsuario;
 
-      target: {
-        tabId: aba.id
-      },
 
-      func: (
-        chaveDadosUsuarios
-      ) => {
+        // ================================================
+        // CONTADORES
+        // ================================================
 
-        function normalizarTexto(
-          texto
-        ) {
+        const contadorAprovacao =
+            dadosUsuario.contadorAprovacao || 0;
 
-          return (texto || "")
-            .normalize("NFD")
-            .replace(
-              /[\u0300-\u036f]/g,
-              ""
-            )
-            .replace(
-              /\s+/g,
-              " "
-            )
-            .trim()
-            .toUpperCase();
+
+        const contadorVerificar =
+            dadosUsuario.contadorVerificar || 0;
+
+
+        const contadorTotal =
+            contadorAprovacao +
+            contadorVerificar;
+
+
+        contadorElemento.textContent =
+            contadorTotal;
+
+
+        contadorAprovacaoElemento.textContent =
+            contadorAprovacao;
+
+
+        contadorVerificarElemento.textContent =
+            contadorVerificar;
+
+
+        // ================================================
+        // USUÁRIO
+        // ================================================
+
+        usuarioElemento.textContent =
+            dados.nomeUsuario;
+
+
+        // ================================================
+        // REPOSITÓRIO
+        // ================================================
+
+        repositorioElemento.textContent =
+            dados.repositorio;
+
+
+        // ================================================
+        // HISTÓRICO
+        // ================================================
+
+        historicoElemento.innerHTML = "";
+
+
+        const historico =
+            [...dadosUsuario.historico].reverse();
+
+
+        if (!historico.length) {
+
+            historicoElemento.innerHTML = `
+                <tr>
+                    <td
+                        colspan="4"
+                        class="sem-historico"
+                    >
+                        Nenhum registro encontrado.
+                    </td>
+                </tr>
+            `;
+
+            return;
         }
 
 
-        // -----------------------------------------
-        // Localiza usuário atual
-        // -----------------------------------------
+        for (const registro of historico) {
 
-        let usuario =
-          null;
+            const linha =
+                document.createElement("tr");
 
 
-        const elementos =
-          document.querySelectorAll(
-            "p.mud-typography.mud-typography-body2"
-          );
+            // ============================================
+            // STATUS
+            // ============================================
+
+            const celulaStatus =
+                document.createElement("td");
 
 
-        for (
-          const elemento
-          of elementos
-        ) {
-
-          const estilo =
-            (
-              elemento.getAttribute(
-                "style"
-              ) || ""
-            )
-              .replace(
-                /\s+/g,
-                ""
-              )
-              .toLowerCase();
+            celulaStatus.textContent =
+                registro.status || "-";
 
 
-          if (
-            !estilo.includes(
-              "color:white"
-            )
-          ) {
-            continue;
-          }
+            if (
+                registro.status === "Aprovação"
+            ) {
+
+                celulaStatus.classList.add(
+                    "status-aprovacao"
+                );
+
+            } else if (
+                registro.status === "Verificar"
+            ) {
+
+                celulaStatus.classList.add(
+                    "status-verificar"
+                );
+            }
 
 
-          const nome =
-            elemento.textContent
-              .replace(
-                /\s+/g,
-                " "
-              )
-              .trim();
+            // ============================================
+            // REPOSITÓRIO
+            // ============================================
+
+            const celulaRepositorio =
+                document.createElement("td");
 
 
-          if (nome) {
-
-            usuario =
-              nome;
-
-            break;
-          }
-        }
+            celulaRepositorio.textContent =
+                registro.repositorioArquivistico ||
+                "-";
 
 
-        if (!usuario) {
-          return;
-        }
+            // ============================================
+            // IDENTIFICADOR
+            // ============================================
+
+            const celulaIdentificador =
+                document.createElement("td");
 
 
-        const chaveUsuario =
-          normalizarTexto(
-            usuario
-          );
+            celulaIdentificador.textContent =
+                registro.identificadorUnico ||
+                "-";
 
 
-        // -----------------------------------------
-        // Obtém dados existentes
-        // -----------------------------------------
+            // ============================================
+            // DATA/HORA
+            // ============================================
 
-        let dadosUsuarios =
-          {};
+            const celulaData =
+                document.createElement("td");
 
 
-        try {
+            celulaData.textContent =
+                registro.dataHora ||
+                "-";
 
-          const salvo =
-            localStorage.getItem(
-              chaveDadosUsuarios
+
+            // ============================================
+            // MONTAR LINHA
+            // ============================================
+
+            linha.appendChild(
+                celulaStatus
+            );
+
+            linha.appendChild(
+                celulaRepositorio
+            );
+
+            linha.appendChild(
+                celulaIdentificador
+            );
+
+            linha.appendChild(
+                celulaData
             );
 
 
-          if (salvo) {
-
-            dadosUsuarios =
-              JSON.parse(
-                salvo
-              );
-          }
-
-        } catch (erro) {
-
-          dadosUsuarios = {};
+            historicoElemento.appendChild(
+                linha
+            );
         }
 
 
-        // -----------------------------------------
-        // Zera somente este usuário
-        // -----------------------------------------
+    } catch (erro) {
 
-        dadosUsuarios[
-          chaveUsuario
-        ] = {
-
-          contador: 0,
-
-          historico: []
-        };
-
-
-        localStorage.setItem(
-
-          chaveDadosUsuarios,
-
-          JSON.stringify(
-            dadosUsuarios
-          )
+        console.error(
+            "Erro ao atualizar popup:",
+            erro
         );
 
-      },
 
-      args: [
-        CHAVE_DADOS_USUARIOS
-      ]
+        contadorElemento.textContent = "0";
 
-    });
+        contadorAprovacaoElemento.textContent = "0";
+
+        contadorVerificarElemento.textContent = "0";
 
 
-    await atualizarTela();
+        usuarioElemento.textContent =
+            "Não disponível";
 
-  } catch (erro) {
 
-    console.error(
-      "[Contador SAFE] Erro ao zerar dados:",
-      erro
-    );
-  }
+        repositorioElemento.textContent =
+            "Não disponível";
+
+
+        historicoElemento.innerHTML = `
+            <tr>
+                <td
+                    colspan="4"
+                    class="sem-historico"
+                >
+                    Abra o PreserveHub para visualizar os dados.
+                </td>
+            </tr>
+        `;
+    }
 }
 
 
-/**
- * Botão Zerar.
- */
-document
-  .getElementById("zerar")
-  .addEventListener(
+// ============================================================
+// ZERAR CONTADOR E HISTÓRICO
+// ============================================================
+
+async function zerarDados() {
+
+    try {
+
+        const abas =
+            await chrome.tabs.query({
+                active: true,
+                currentWindow: true
+            });
+
+
+        if (!abas || !abas.length) {
+
+            throw new Error(
+                "Aba ativa não encontrada."
+            );
+        }
+
+
+        const aba = abas[0];
+
+
+        if (
+            !aba.url ||
+            !aba.url.startsWith(
+                "https://preserve.cedae.com.br/"
+            )
+        ) {
+
+            throw new Error(
+                "Abra o PreserveHub para zerar os dados."
+            );
+        }
+
+
+        await chrome.scripting.executeScript({
+
+            target: {
+                tabId: aba.id
+            },
+
+            func: () => {
+
+                function normalizarTexto(texto) {
+
+                    return (texto || "")
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .replace(/\s+/g, " ")
+                        .trim();
+                }
+
+
+                function obterChaveUsuario(nomeUsuario) {
+
+                    return normalizarTexto(
+                        nomeUsuario
+                    ).toUpperCase();
+                }
+
+
+                // ============================================
+                // LOCALIZAR USUÁRIO
+                // ============================================
+
+                let nomeUsuario =
+                    "Usuário não identificado";
+
+
+                const elementos =
+                    document.querySelectorAll(
+                        "p.mud-typography.mud-typography-body2"
+                    );
+
+
+                for (const elemento of elementos) {
+
+                    const estilo =
+                        elemento.getAttribute("style") || "";
+
+
+                    if (
+                        estilo
+                            .toLowerCase()
+                            .includes("color:white")
+                    ) {
+
+                        const nome =
+                            elemento.textContent.trim();
+
+
+                        if (nome) {
+
+                            nomeUsuario = nome;
+
+                            break;
+                        }
+                    }
+                }
+
+
+                const chaveUsuario =
+                    obterChaveUsuario(
+                        nomeUsuario
+                    );
+
+
+                // ============================================
+                // LER DADOS
+                // ============================================
+
+                let dadosUsuarios = {};
+
+
+                try {
+
+                    const dadosSalvos =
+                        localStorage.getItem(
+                            "dadosContadorAprovacaoPorUsuario"
+                        );
+
+
+                    if (dadosSalvos) {
+
+                        dadosUsuarios =
+                            JSON.parse(dadosSalvos);
+                    }
+
+                } catch (erro) {
+
+                    console.error(
+                        "Erro ao ler dados:",
+                        erro
+                    );
+                }
+
+
+                // ============================================
+                // ZERAR SOMENTE O USUÁRIO ATUAL
+                // ============================================
+
+                dadosUsuarios[chaveUsuario] = {
+
+                    contadorAprovacao: 0,
+
+                    contadorVerificar: 0,
+
+                    historico: []
+                };
+
+
+                // ============================================
+                // SALVAR
+                // ============================================
+
+                localStorage.setItem(
+
+                    "dadosContadorAprovacaoPorUsuario",
+
+                    JSON.stringify(dadosUsuarios)
+                );
+            }
+
+        });
+
+
+        await atualizarPopup();
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao zerar dados:",
+            erro
+        );
+
+        alert(
+            erro.message ||
+            "Não foi possível zerar os dados."
+        );
+    }
+}
+
+
+// ============================================================
+// EVENTO DO BOTÃO
+// ============================================================
+
+botaoZerar.addEventListener(
     "click",
-    zerarDados
-  );
+    async () => {
+
+        const confirmar =
+            confirm(
+                "Deseja realmente zerar o contador e o histórico deste usuário?"
+            );
 
 
-/**
- * Inicialização.
- */
-atualizarTela();
+        if (!confirmar) {
+            return;
+        }
+
+
+        await zerarDados();
+    }
+);
+
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+
+atualizarPopup();
+
+
+console.log(
+    `Popup v${VERSAO} carregado.`
+);

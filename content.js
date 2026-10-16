@@ -1,597 +1,482 @@
+// ============================================================
+// CONTADOR SAFE
+// VERSÃO 1.0.0
+// CRIADO POR DERIK PIMENTEL
+// ============================================================
+
+const VERSAO = "1.0.0";
+
+const CHAVE_DADOS_USUARIOS = "dadosContadorAprovacaoPorUsuario";
+
 let aguardandoConfirmacao = false;
 let ultimoClique = 0;
-let janelaContadorTimer = null;
-
-const CHAVE_DADOS_USUARIOS = "dadosContadorCedAprovacaoPorUsuario";
-
-const ID_JANELA_CONTADOR = "janela-contador";
 
 
-/**
- * Exibe uma janela flutuante dentro da página temporariamente.
- */
-function mostrarJanelaContador(contador) {
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
 
-  let janela = document.getElementById(ID_JANELA_CONTADOR);
-
-  // Se a janela ainda não existir, cria.
-  if (!janela) {
-
-    janela = document.createElement("div");
-
-    janela.id = ID_JANELA_CONTADOR;
-
-    janela.innerHTML = `
-      <div class="titulo">Contador SAFE</div>
-      <div class="numero"></div>
-      <div class="mensagem">Confirmação contabilizada</div>
-    `;
-
-    janela.style.position = "fixed";
-    janela.style.top = "20px";
-    janela.style.right = "20px";
-    janela.style.width = "230px";
-    janela.style.padding = "18px";
-    janela.style.background = "#ffffff";
-    janela.style.border = "1px solid #198754";
-    janela.style.borderRadius = "10px";
-    janela.style.boxShadow = "0 4px 15px rgba(0,0,0,0.20)";
-    janela.style.zIndex = "2147483647";
-    janela.style.fontFamily = "Arial, sans-serif";
-    janela.style.textAlign = "center";
-    janela.style.boxSizing = "border-box";
-
-    const titulo = janela.querySelector(".titulo");
-
-    titulo.style.fontSize = "16px";
-    titulo.style.fontWeight = "bold";
-    titulo.style.marginBottom = "8px";
-
-    const numero = janela.querySelector(".numero");
-
-    numero.style.fontSize = "36px";
-    numero.style.fontWeight = "bold";
-    numero.style.margin = "5px 0 8px";
-
-    const mensagem = janela.querySelector(".mensagem");
-
-    mensagem.style.fontSize = "12px";
-    mensagem.style.color = "#555";
-
-    document.body.appendChild(janela);
-  }
-
-  // Atualiza o número.
-  const numero = janela.querySelector(".numero");
-
-  numero.textContent = contador;
-
-
-  // Mostra a janela.
-  janela.style.display = "block";
-
-
-  // Cancela o desaparecimento anterior.
-  if (janelaContadorTimer) {
-    clearTimeout(janelaContadorTimer);
-  }
-
-
-  // Esconde depois de 10 segundos.
-  janelaContadorTimer = setTimeout(() => {
-
-    janela.style.display = "none";
-
-  }, 10000);
-}
-
-
-/**
- * Normaliza texto:
- * - remove acentos
- * - remove espaços extras
- * - converte para maiúsculas
- */
 function normalizarTexto(texto) {
-  return (texto || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toUpperCase();
+    return (texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
 }
 
 
-/**
- * Verifica se é o botão ENVIAR PARA APROVAÇÃO.
- */
-function ehBotaoEnviarAprovacao(elemento) {
-  if (!elemento || elemento.tagName !== "BUTTON") {
-    return false;
-  }
-
-  const texto = normalizarTexto(elemento.textContent);
-
-  return texto.includes("ENVIAR PARA APROVACAO");
+function obterChaveUsuario(nomeUsuario) {
+    return normalizarTexto(nomeUsuario).toUpperCase();
 }
 
 
-/**
- * Verifica se é o botão SIM.
- */
-function ehBotaoSim(elemento) {
-  if (!elemento || elemento.tagName !== "BUTTON") {
-    return false;
-  }
+// ============================================================
+// IDENTIFICADOR ÚNICO
+// ============================================================
 
-  const label = elemento.querySelector(".mud-button-label");
-
-  if (!label) {
-    return false;
-  }
-
-  return normalizarTexto(label.textContent) === "SIM";
-}
-
-
-/**
- * Obtém o Identificador Único.
- *
- * Exemplo:
- * PRT.001.xxxxxxxx/xxxx-xx
- */
 function obterIdentificadorUnico() {
-  const elemento = document.querySelector(
-    "h6.mud-typography.mud-typography-subtitle1.truncate"
-  );
 
-  if (!elemento) {
-    return null;
-  }
+    // --------------------------------------------------------
+    // 1. Tentativa principal: elemento conhecido
+    // --------------------------------------------------------
 
-  const identificador = elemento.textContent
-    .replace(/\s+/g, " ")
-    .trim();
+    const elemento = document.querySelector("#qjbk3g");
 
-  return identificador || null;
+    if (elemento) {
+
+        const texto = elemento.textContent.trim();
+
+        if (texto) {
+            return texto;
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // 2. Tentativa alternativa:
+    // procurar pelo padrão do identificador
+    // --------------------------------------------------------
+
+    const elementos =
+        document.querySelectorAll(
+            "h1, h2, h3, h4, h5, h6, p, span, div"
+        );
+
+
+    for (const elementoAtual of elementos) {
+
+        const texto =
+            elementoAtual.textContent.trim();
+
+
+        // Exemplo:
+        // PRT.001.00644161/2026-18
+
+        const correspondencia =
+            texto.match(
+                /PRT\.\d+\.\d+\/\d{4}-\d+/i
+            );
+
+
+        if (correspondencia) {
+
+            return correspondencia[0];
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // 3. Não encontrado
+    // --------------------------------------------------------
+
+    return "Não identificado";
 }
 
 
-/**
- * Obtém o Repositório Arquivístico.
- *
- * Exemplo na página:
- * REPOSITÓRIO ARQUIVÍSTICO CEDAE RJ
- *
- * Retorno:
- * CEDAE RJ
- */
+// ============================================================
+// REPOSITÓRIO ARQUIVÍSTICO
+// ============================================================
+
 function obterRepositorioArquivistico() {
-  const elementos = document.querySelectorAll(
-    "p.mud-typography.mud-typography-body2"
-  );
 
-  const prefixo = "REPOSITORIO ARQUIVISTICO";
+    const elementos = document.querySelectorAll(
+        "p.mud-typography.mud-typography-body2"
+    );
 
-  for (const elemento of elementos) {
+    for (const elemento of elementos) {
 
-    const textoOriginal = elemento.textContent
-      .replace(/\s+/g, " ")
-      .trim();
+        const texto = elemento.textContent.trim();
 
-    const textoNormalizado =
-      normalizarTexto(textoOriginal);
+        const normalizado = normalizarTexto(texto).toUpperCase();
 
-    if (textoNormalizado.startsWith(prefixo)) {
+        if (normalizado.startsWith("REPOSITORIO ARQUIVISTICO")) {
 
-      const repositorio =
-        textoNormalizado
-          .substring(prefixo.length)
-          .trim();
-
-      return repositorio || null;
+            return texto
+                .replace(/^REPOSITÓRIO ARQUIVÍSTICO\s*/i, "")
+                .trim();
+        }
     }
-  }
 
-  return null;
+    return "Não identificado";
 }
 
 
-/**
- * Obtém o nome do usuário logado.
- *
- * Procura o elemento:
- *
- * <p class="mud-typography mud-typography-body2"
- *    style="color:white">
- *   Derik Pimentel
- * </p>
- */
-function obterNomeUsuario() {
-  const elementos = document.querySelectorAll(
-    "p.mud-typography.mud-typography-body2"
-  );
+// ============================================================
+// USUÁRIO LOGADO
+// ============================================================
 
-  for (const elemento of elementos) {
+function obterUsuarioLogado() {
 
-    const estilo =
-      (elemento.getAttribute("style") || "")
-        .replace(/\s+/g, "")
-        .toLowerCase();
+    const elementos = document.querySelectorAll(
+        "p.mud-typography.mud-typography-body2"
+    );
 
-    if (!estilo.includes("color:white")) {
-      continue;
+    for (const elemento of elementos) {
+
+        const estilo = elemento.getAttribute("style") || "";
+
+        if (estilo.toLowerCase().includes("color:white")) {
+
+            const nome = elemento.textContent.trim();
+
+            if (nome) {
+                return nome;
+            }
+        }
     }
 
-    const nome = elemento.textContent
-      .replace(/\s+/g, " ")
-      .trim();
-
-    if (nome) {
-      return nome;
-    }
-  }
-
-  return null;
+    return "Usuário não identificado";
 }
 
 
-/**
- * Formata a data/hora no padrão:
- *
- * DD/MM/AAAA HH:mm:ss
- *
- * Exemplo:
- * 05/10/2026 16:49:30
- */
+// ============================================================
+// DATA E HORA
+// ============================================================
+
 function obterDataHoraAtual() {
 
-  const agora = new Date();
+    const agora = new Date();
 
-  const dia = String(agora.getDate()).padStart(2, "0");
-  const mes = String(agora.getMonth() + 1).padStart(2, "0");
-  const ano = agora.getFullYear();
+    const dia = String(agora.getDate()).padStart(2, "0");
+    const mes = String(agora.getMonth() + 1).padStart(2, "0");
+    const ano = agora.getFullYear();
 
-  const horas = String(agora.getHours()).padStart(2, "0");
-  const minutos = String(agora.getMinutes()).padStart(2, "0");
-  const segundos = String(agora.getSeconds()).padStart(2, "0");
+    const hora = String(agora.getHours()).padStart(2, "0");
+    const minuto = String(agora.getMinutes()).padStart(2, "0");
+    const segundo = String(agora.getSeconds()).padStart(2, "0");
 
-  return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+    return `${dia}/${mes}/${ano} ${hora}:${minuto}:${segundo}`;
 }
 
 
-/**
- * Obtém o banco de dados de usuários.
- */
-function obterDadosUsuarios() {
+// ============================================================
+// ESTRUTURA PADRÃO DO USUÁRIO
+// ============================================================
 
-  try {
+function obterDadosUsuario(dadosUsuarios, chaveUsuario) {
 
-    const salvo =
-      localStorage.getItem(
-        CHAVE_DADOS_USUARIOS
-      );
+    if (!dadosUsuarios[chaveUsuario]) {
 
-    if (!salvo) {
-      return {};
+        dadosUsuarios[chaveUsuario] = {
+            contadorAprovacao: 0,
+            contadorVerificar: 0,
+            historico: []
+        };
     }
 
-    const dados =
-      JSON.parse(salvo);
+    // Compatibilidade com estruturas anteriores
+    if (
+        typeof dadosUsuarios[chaveUsuario].contadorAprovacao !== "number"
+    ) {
+        dadosUsuarios[chaveUsuario].contadorAprovacao = 0;
+    }
 
     if (
-      typeof dados !== "object" ||
-      dados === null ||
-      Array.isArray(dados)
+        typeof dadosUsuarios[chaveUsuario].contadorVerificar !== "number"
     ) {
-      return {};
+        dadosUsuarios[chaveUsuario].contadorVerificar = 0;
     }
 
-    return dados;
+    if (!Array.isArray(dadosUsuarios[chaveUsuario].historico)) {
+        dadosUsuarios[chaveUsuario].historico = [];
+    }
 
-  } catch (erro) {
-
-    console.error(
-      "[Contador SAFE] Erro ao ler dados por usuário:",
-      erro
-    );
-
-    return {};
-  }
+    return dadosUsuarios[chaveUsuario];
 }
 
 
-/**
- * Salva o banco de dados de usuários.
- */
-function salvarDadosUsuarios(dados) {
+// ============================================================
+// REGISTRAR AÇÃO
+// ============================================================
 
-  localStorage.setItem(
-    CHAVE_DADOS_USUARIOS,
-    JSON.stringify(dados)
-  );
-}
+function registrarAcao(status) {
+
+    const nomeUsuario = obterUsuarioLogado();
+
+    const chaveUsuario = obterChaveUsuario(nomeUsuario);
+
+    let dadosUsuarios = {};
+
+    try {
+
+        const dadosSalvos = localStorage.getItem(
+            CHAVE_DADOS_USUARIOS
+        );
+
+        if (dadosSalvos) {
+            dadosUsuarios = JSON.parse(dadosSalvos);
+        }
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao ler dados do contador:",
+            erro
+        );
+
+        dadosUsuarios = {};
+    }
 
 
-/**
- * Registra uma nova contagem
- * somente para o usuário atual.
- */
-function registrarContagem(
-  identificadorUnico,
-  dataHora,
-  repositorioArquivistico,
-  nomeUsuario
-) {
-
-  const chaveUsuario =
-    normalizarTexto(
-      nomeUsuario
+    const dadosUsuario = obterDadosUsuario(
+        dadosUsuarios,
+        chaveUsuario
     );
 
 
-  if (!chaveUsuario) {
+    const registro = {
 
-    console.error(
-      "[Contador SAFE] Usuário não identificado."
-    );
+        status: status,
 
-    return;
-  }
+        repositorioArquivistico:
+            obterRepositorioArquivistico(),
 
+        identificadorUnico:
+            obterIdentificadorUnico(),
 
-  const dadosUsuarios =
-    obterDadosUsuarios();
+        dataHora:
+            obterDataHoraAtual(),
 
-
-  if (
-    !dadosUsuarios[chaveUsuario]
-  ) {
-
-    dadosUsuarios[chaveUsuario] = {
-      contador: 0,
-      historico: []
+        nomeUsuario:
+            nomeUsuario
     };
-  }
 
 
-  const dadosUsuario =
-    dadosUsuarios[chaveUsuario];
+    // ========================================================
+    // CONTADOR POR STATUS
+    // ========================================================
 
+    if (status === "Aprovação") {
 
-  // ---------------------------------------------
-  // Incrementa apenas o contador deste usuário
-  // ---------------------------------------------
+        dadosUsuario.contadorAprovacao++;
 
-  dadosUsuario.contador =
-    Number.parseInt(
-      dadosUsuario.contador || 0,
-      10
-    ) + 1;
+    } else if (status === "Verificar") {
 
-
-  // --------------------------------------------------
-  // Adiciona novo registro deste usuário
-  // --------------------------------------------------
-
-  dadosUsuario.historico.push({
-    identificadorUnico: identificadorUnico,
-    dataHora: dataHora,
-    repositorioArquivistico: repositorioArquivistico,
-    nomeUsuario: nomeUsuario
-  });
-
-
-  // --------------------------------------------------
-  // Salva estrutura completa
-  // --------------------------------------------------
-
-  dadosUsuarios[chaveUsuario] =
-    dadosUsuario;
-
-
-  salvarDadosUsuarios(
-    dadosUsuarios
-  );
-
-
-  // ---------------------------------------------
-  // Mostra contador
-  // ---------------------------------------------
-
-  mostrarJanelaContador(dadosUsuario.contador); // Exibe a página temporária do contador.
-
-
-  console.log(
-    `[Contador SAFE] Contagem: ${novoContador}`
-  );
-
-  console.log(
-    `[Contador SAFE] Identificador: ${identificadorUnico}`
-  );
-
-  console.log(
-    `[Contador SAFE] Data/Hora: ${dataHora}`
-  );
-
-  console.log(
-    "[Contador SAFE] Repositório:", repositorioArquivistico
-  );
-
-  console.log(
-    "[Contador SAFE] Usuário:", nomeUsuario
-  );
-}
-
-
-/**
- * Clique em ENVIAR PARA APROVAÇÃO.
- */
-function registrarEnvioParaAprovacao() {
-
-  aguardandoConfirmacao = true;
-
-  console.log(
-    "[Contador SAFE] ENVIAR PARA APROVAÇÃO detectado."
-  );
-
-  console.log(
-    "[Contador SAFE] Aguardando confirmação SIM."
-  );
-}
-
-
-/**
- * Clique no SIM.
- *
- * Só contabiliza se anteriormente houve
- * ENVIAR PARA APROVAÇÃO.
- */
-function registrarConfirmacao() {
-
-  // --------------------------------------------------
-  // Verifica se existe uma aprovação pendente
-  // --------------------------------------------------
-
-  if (!aguardandoConfirmacao) {
-
-    console.log(
-      "[Contador SAFE] SIM ignorado: não houve ENVIAR PARA APROVAÇÃO."
-    );
-
-    return;
-  }
-
-
-  // --------------------------------------------------
-  // Proteção contra eventos duplicados
-  // --------------------------------------------------
-
-  const agora = Date.now();
-
-
-  // Evita eventos duplicados.
-  if (agora - ultimoClique < 100) {
-    return;
-  }
-
-  ultimoClique = agora;
-
-
-  // --------------------------------------------------
-  // Obtém as informações antes de contabilizar
-  // --------------------------------------------------
-
-  const identificadorUnico =
-    obterIdentificadorUnico() ||
-    "Não identificado";
-
-  const dataHora =
-    obterDataHoraAtual();
-
-  const repositorioArquivistico =
-    obterRepositorioArquivistico() ||
-    "Não identificado";
-
-  const nomeUsuario =
-    obterNomeUsuario() ||
-    "Não identificado";
-
-
-  if (identificadorUnico == "Não identificado") {
-
-    console.warn(
-      "[Contador SAFE] Não foi possível localizar o Identificador Único."
-    );
-
-    return;
-  }
-
-  if (repositorioArquivistico == "Não identificado") {
-
-    console.warn(
-      "[Contador SAFE] Não foi possível localizar o Repositório Arquivístico."
-    );
-
-    return;
-  }
-
-  if (nomeUsuario == "Não identificado") {
-
-    console.warn(
-      "[Contador SAFE] Não foi possível localizar o Usuário."
-    );
-
-    return;
-  }
-
-
-  // --------------------------------------------------
-  // Consome a confirmação
-  // --------------------------------------------------
-
-  aguardandoConfirmacao = false;
-
-
-  // --------------------------------------------------
-  // Registra somente para este usuário
-  // --------------------------------------------------
-
-  registrarContagem(
-    identificadorUnico,
-    dataHora,
-    repositorioArquivistico,
-    nomeUsuario
-  );
-}
-
-
-/**
- * Monitora os cliques na página.
- *
- * Usamos delegação de eventos para funcionar
- * mesmo quando o Blazor recria os botões.
- */
-document.addEventListener(
-  "click",
-  (evento) => {
-
-    const alvo = evento.target;
-
-    if (!(alvo instanceof Element)) {
-      return;
+        dadosUsuario.contadorVerificar++;
     }
 
 
-    const botao = alvo.closest("button");
+    // ========================================================
+    // HISTÓRICO
+    // ========================================================
+
+    dadosUsuario.historico.push(registro);
+
+
+    // ========================================================
+    // SALVAR
+    // ========================================================
+
+    localStorage.setItem(
+        CHAVE_DADOS_USUARIOS,
+        JSON.stringify(dadosUsuarios)
+    );
+
+
+    // ========================================================
+    // MOSTRAR CONTADOR
+    // ========================================================
+
+    mostrarContador(dadosUsuario);
+}
+
+
+// ============================================================
+// CONTADOR TOTAL
+// ============================================================
+
+function obterContadorTotal(dadosUsuario) {
+
+    return (
+        (dadosUsuario.contadorAprovacao || 0) +
+        (dadosUsuario.contadorVerificar || 0)
+    );
+}
+
+
+// ============================================================
+// OVERLAY
+// ============================================================
+
+let timerOverlay = null;
+
+
+function mostrarContador(dadosUsuario) {
+
+    let janela =
+        document.querySelector("#janela-contador-cedae");
+
+
+    if (!janela) {
+
+        janela = document.createElement("div");
+
+        janela.id = "janela-contador-cedae";
+
+        janela.style.position = "fixed";
+        janela.style.top = "20px";
+        janela.style.right = "20px";
+        janela.style.zIndex = "999999";
+        janela.style.background = "#ffffff";
+        janela.style.border = "1px solid #ccc";
+        janela.style.borderRadius = "8px";
+        janela.style.padding = "15px";
+        janela.style.boxShadow =
+            "0 4px 12px rgba(0,0,0,0.25)";
+        janela.style.fontFamily = "Arial, sans-serif";
+        janela.style.minWidth = "220px";
+
+        document.body.appendChild(janela);
+    }
+
+
+    const total = obterContadorTotal(dadosUsuario);
+
+
+    janela.innerHTML = `
+        <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">
+            Contador CEDAE
+        </div>
+
+        <div style="font-size:30px;font-weight:bold;text-align:center;">
+            ${total}
+        </div>
+
+        <div style="font-size:12px;text-align:center;margin-bottom:10px;">
+            Total Geral
+        </div>
+
+        <div style="font-size:13px;">
+            <strong>Aprovação:</strong>
+            ${dadosUsuario.contadorAprovacao}
+        </div>
+
+        <div style="font-size:13px;">
+            <strong>Verificar:</strong>
+            ${dadosUsuario.contadorVerificar}
+        </div>
+
+        <div style="
+            font-size:12px;
+            color:#555;
+            margin-top:8px;
+            text-align:center;
+        ">
+            Confirmação contabilizada
+        </div>
+    `;
+
+
+    janela.style.display = "block";
+
+
+    if (timerOverlay) {
+        clearTimeout(timerOverlay);
+    }
+
+
+    timerOverlay = setTimeout(() => {
+
+        janela.style.display = "none";
+
+    }, 10000);
+}
+
+
+// ============================================================
+// DETECTAR ENVIAR PARA APROVAÇÃO
+// ============================================================
+
+document.addEventListener("click", function (evento) {
+
+    const botao = evento.target.closest("button");
 
     if (!botao) {
-      return;
+        return;
     }
 
 
+    const textoBotao =
+        normalizarTexto(botao.textContent).toUpperCase();
+
+
+    // ========================================================
     // ENVIAR PARA APROVAÇÃO
-    if (ehBotaoEnviarAprovacao(botao)) {
+    // ========================================================
 
-      registrarEnvioParaAprovacao();
+    if (
+        textoBotao === "ENVIAR PARA APROVACAO"
+    ) {
 
-      return;
+        aguardandoConfirmacao = true;
+
+        return;
     }
 
 
-    // SIM
-    if (ehBotaoSim(botao)) {
+    // ========================================================
+    // CONFIRMAÇÃO SIM
+    // ========================================================
 
-      registrarConfirmacao();
+    if (
+        aguardandoConfirmacao &&
+        textoBotao === "SIM"
+    ) {
 
-      return;
+        const agora = Date.now();
+
+
+        // Proteção contra duplo clique
+        if (agora - ultimoClique < 1000) {
+            return;
+        }
+
+
+        ultimoClique = agora;
+
+
+        aguardandoConfirmacao = false;
+
+
+        registrarAcao("Aprovação");
     }
 
-  },
-  true
-);
+});
 
+
+// ============================================================
+// PREPARAÇÃO FUTURA - A VERIFICAR
+// ============================================================
+//
+// A detecção de "A VERIFICAR" ainda não está ativa.
+//
+// Quando identificarmos exatamente o botão/elemento utilizado
+// pela página para essa operação, será possível chamar:
+//
+// registrarAcao("Verificar");
+//
+// ============================================================
 
 console.log(
-  "[Contador SAFE] Monitoramento iniciado."
+    `Contador SAFE v${VERSAO} carregado.`
 );

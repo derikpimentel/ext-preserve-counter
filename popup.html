@@ -1,62 +1,121 @@
+<!--
+=====================================================
+CONTADOR SAFE
+VERSÃO 1.0.0
+CRIADO POR DERIK PIMENTEL
+=====================================================
+-->
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
   <meta charset="UTF-8">
 
+  <title>Contador SAFE</title>
+
   <style>
 
     body {
-      width: 420px;
+      width: 600px;
       padding: 20px;
       font-family: Arial, sans-serif;
       text-align: center;
-      box-sizing: border-box;
+      background: #f5f5f5;
     }
 
     h2 {
       margin-top: 0;
+      margin-bottom: 15px;
+      text-align: center;
     }
 
-    #contador {
+    .contador-principal {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      margin-bottom: 15px;
+    }
+
+    .contador-total {
       font-size: 42px;
       font-weight: bold;
-      color: #198754;
-      margin: 20px 0;
     }
 
-    button {
-      padding: 8px 16px;
+    .contador-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .contadores-status {
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #ddd;
+      padding-top: 12px;
+    }
+
+    .status-box {
+      text-align: center;
+    }
+
+    .status-valor {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .status-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    #zerar {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 6px;
+      background: #c62828;
+      color: white;
+      font-weight: bold;
       cursor: pointer;
-      margin-bottom: 20px;
+    }
+
+    #zerar:hover {
+      background: #a91f1f;
     }
 
     .informacoes {
-      text-align: left;
-      margin-bottom: 20px;
+      background: white;
+      border-radius: 8px;
       padding: 12px;
-      background: #f5f5f5;
-      border-radius: 6px;
+      margin-bottom: 15px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
     }
 
     .informacao {
-      margin: 5px 0;
+      margin-bottom: 6px;
       font-size: 13px;
     }
 
-    .rotulo {
+    .informacao:last-child {
+      margin-bottom: 0;
+    }
+
+    .titulo-historico {
+      font-size: 18px;
       font-weight: bold;
+      margin-bottom: 8px;
     }
 
-    h3 {
-      text-align: left;
-      margin-bottom: 10px;
-    }
-
-    .historico-container {
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
+    .tabela-container {
+      background: white;
+      border-radius: 8px;
+      overflow: auto;
+      max-height: 350px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
     }
 
     table {
@@ -65,23 +124,37 @@
       font-size: 12px;
     }
 
-    th,
-    td {
-      padding: 8px 6px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-
     th {
-      background: #f5f5f5;
       position: sticky;
       top: 0;
+      background: #eeeeee;
+      padding: 9px 6px;
+      text-align: left;
+      border-bottom: 1px solid #ccc;
     }
 
-    .sem-registros {
-      padding: 15px;
-      color: #777;
+    td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #eeeeee;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-aprovacao {
+      font-weight: bold;
+    }
+
+    .status-verificar {
+      font-weight: bold;
+    }
+
+    .sem-historico {
       text-align: center;
+      color: #777;
+      padding: 20px;
     }
 
   </style>
@@ -92,55 +165,152 @@
 
   <h2>Contador SAFE</h2>
 
-  <div id="contador">0</div>
 
-  <button id="zerar">
-    Zerar contador e histórico
-  </button>
+    <!--
+    =====================================================
+    CONTADOR
+    =====================================================
+    -->
+
+    <div class="contador-principal">
+
+        <div
+            id="contador"
+            class="contador-total"
+        >
+            0
+        </div>
+
+        <div class="contador-label">
+            TOTAL GERAL
+        </div>
 
 
-  <div class="informacoes">
+        <div class="contadores-status">
 
-    <div class="informacao">
-      <span class="rotulo">Usuário logado:</span>
-      <span id="usuario-logado">
-        Não identificado
-      </span>
+            <div class="status-box">
+
+                <div
+                    id="contador-aprovacao"
+                    class="status-valor"
+                >
+                    0
+                </div>
+
+                <div class="status-label">
+                    Aprovação
+                </div>
+
+            </div>
+
+
+            <div class="status-box">
+
+                <div
+                    id="contador-verificar"
+                    class="status-valor"
+                >
+                    0
+                </div>
+
+                <div class="status-label">
+                    Verificar
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="informacao">
-      <span class="rotulo">Repositório atual:</span>
-      <span id="repositorio-atual">
-        Não identificado
-      </span>
+
+    <!--
+    =====================================================
+    BOTÃO ZERAR
+    =====================================================
+    -->
+
+    <button id="zerar">
+        Zerar contador e histórico
+    </button>
+
+
+    <!--
+    =====================================================
+    INFORMAÇÕES
+    =====================================================
+    -->
+
+    <div class="informacoes">
+
+        <div class="informacao">
+            <strong>Usuário logado:</strong>
+            <span id="usuario-logado">
+                -
+            </span>
+        </div>
+
+        <div class="informacao">
+            <strong>Repositório atual:</strong>
+            <span id="repositorio-atual">
+                -
+            </span>
+        </div>
+
     </div>
 
-  </div>
+
+    <!--
+    =====================================================
+    HISTÓRICO
+    =====================================================
+    -->
+
+    <div class="titulo-historico">
+        Histórico
+    </div>
 
 
-  <h3>Histórico</h3>
+    <div class="tabela-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Status</th>
+
+                    <th>Repositório</th>
+
+                    <th>Identificador Único</th>
+
+                    <th>Data/Hora</th>
+
+                </tr>
+
+            </thead>
 
 
-  <div class="historico-container">
+            <tbody id="historico">
 
-    <table>
+                <tr>
 
-      <thead>
+                    <td
+                        colspan="4"
+                        class="sem-historico"
+                    >
+                        Nenhum registro encontrado.
+                    </td>
 
-        <tr>
-          <th>Identificador Único</th>
-          <th>Data/Hora</th>
-        </tr>
+                </tr>
 
-      </thead>
+            </tbody>
 
-      <tbody id="historico">
-      </tbody>
+        </table>
 
-    </table>
+    </div>
 
-  </div>
-  
 
   <script src="popup.js"></script>
 

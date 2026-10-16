@@ -7,18 +7,17 @@ O Contador SAFE tem como objetivo registrar as confirmações realizadas no flux
 
 ## Funcionalidades
 
-- Identificação do fluxo de envio para aprovação no PreserveHub.
-- Detecção da confirmação por meio do botão **Sim**.
-- Contagem das confirmações identificadas.
-- Registro do identificador único e da data e hora da ocorrência, conforme a implementação.
-- Exibição temporária de uma janela flutuante com o total contabilizado.
-- Exibição do contador e do histórico no popup da extensão.
-- Opção para zerar o contador e limpar o histórico.
-- Contador independente por usuário identificado.
-- Histórico de confirmações organizado por usuário.
-- Limpeza do contador e do histórico do usuário atual.
+- Contagem de acionamentos por usuário.
+- Contadores separados para as categorias Aprovação e Verificar, com validação do fluxo Verificar ainda pendente.
+- Exibição do total geral e dos totais por categoria.
+- Histórico de acionamentos com status, repositório, identificador único e data/hora.
+- Consulta dos dados do usuário identificado no PreserveHub.
+- Limpeza do contador e do histórico do usuário atual, mediante confirmação.
+- Exibição de um contador temporário na página.
 
-> Observação: as funcionalidades devem ser consideradas implementadas no código, mas precisam ser verificadas na versão integrada antes de serem declaradas como plenamente validadas.
+> Observação 1: as funcionalidades devem ser consideradas implementadas no código, mas precisam ser verificadas na versão integrada antes de serem declaradas como plenamente validadas.
+
+> Observação 2: a contagem da categoria Verificar depende da implementação e validação do fluxo correspondente no PreserveHub.
 
 ## Tecnologias
 
@@ -47,12 +46,15 @@ Os nomes das opções podem variar conforme o navegador.
 
 ## Armazenamento
 
-Na implementação atualmente discutida, o contador e o histórico são armazenados no `localStorage` da página do PreserveHub, utilizando as chaves:
+Na implementação atualmente discutida, o contador e o histórico são armazenados no `localStorage` da página do PreserveHub, organizados por usuário.
 
-- `contadorAprovacao`
-- `historicoContadorAprovacao`
+A chave de armazenamento utilizada é  `dadosContadorAprovacaoPorUsuario`. Para cada usuário identificado, a estrutura contém:
 
-Os registros do histórico incluem quatro campos:
+- `contadorAprovacao`: total de acionamentos da categoria Aprovação.
+- `contadorVerificar`: total de acionamentos da categoria Verificar.
+- `historico`: lista de registros associados ao usuário.
+
+Os registros do histórico incluem informações como:
 
 | Campo	| Finalidade |
 |---|---|
@@ -62,6 +64,8 @@ Os registros do histórico incluem quatro campos:
 | `nomeUsuario` | Registra o nome de usuário identificado na página. |
 
 O popup utiliza a permissão de execução de scripts para consultar e alterar esses dados na aba compatível. Por isso, seu funcionamento depende da disponibilidade de uma aba do PreserveHub.
+
+A compatibilidade com os dados armazenados por versões anteriores ainda precisa ser verificada.
 
 ## Estrutura do projeto
 

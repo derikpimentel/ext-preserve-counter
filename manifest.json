@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Contador de Acionamentos SAFE",
   "version": "1.0.0",
-  "description": "Conta apenas as confirmações após Enviar para Aprovação no PreserveHub.",
+  "description": "Contador de acionamentos realizados no PreserveHub.",
   
   "permissions": [
     "storage",
@@ -27,6 +27,7 @@
 
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "Logo_SAFE.png"
+    "default_icon": "Logo_SAFE.png",
+    "default_title": "Contador SAFE"
   }
 }

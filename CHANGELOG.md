@@ -24,12 +24,18 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Estrutura de armazenamento de contadores e históricos organizada por usuário.
 - Consulta dos registros associados ao usuário atual no popup.
 - Limpeza individual do contador e do histórico do usuário atual.
+- Separação dos contadores por categoria de acionamento.
+- Exibição do total geral e dos totais por categoria no popup.
+- Exibição do status de cada registro no histórico.
+- Confirmação antes de zerar o contador e o histórico.
 
 ### Alterado
 
 - Ampliação dos dados apresentados no histórico de confirmações.
 - Atualização da interface do popup para apresentar informações contextuais.
 - Substituição da estrutura global de contador e histórico por uma estrutura organizada por usuário.
+- Reorganização do popup para exibir os novos contadores e as informações do histórico.
+- Atualização da identificação e da extração de informações da página.
 
 ### Em validação
 
@@ -45,9 +51,10 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Consistência da interface após zerar o contador e o histórico.
 - Consistência da chave de armazenamento entre os scripts.
 - Correspondência entre o contador salvo e o contador apresentado no popup.
-- Isolamento dos dados entre usuários.
-- Tratamento de dados armazenados inválidos.
-- Tratamento ou migração dos registros criados pela versão anterior.
+- Isolamento dos dados por usuários.
+- Tratamento de dados inválidos e falhas na identificação dos campos.
+- Compatibilidade com os registros armazenados pela estrutura anterior.
+- Detecção da categoria Verificar.
 
 ## Versão declarada no manifesto
 
