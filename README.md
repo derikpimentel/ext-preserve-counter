@@ -10,7 +10,7 @@ O Contador SAFE tem como objetivo registrar as confirmações realizadas no flux
 - Contagem de acionamentos por usuário.
 - Contadores separados para as categorias Aprovação e Verificar, com validação do fluxo Verificar ainda pendente.
 - Exibição do total geral e dos totais por categoria.
-- Histórico de acionamentos com status, repositório, identificador único e data/hora.
+- Histórico de acionamentos com status, repositório, identificador único e data/hora, exibindo os cinco registros mais recentes no popup.
 - Consulta dos dados do usuário identificado no PreserveHub.
 - Limpeza do contador e do histórico do usuário atual, mediante confirmação.
 - Exibição de um contador temporário na página.
@@ -67,6 +67,8 @@ Os registros do histórico incluem informações como:
 | `repositorioArquivistico` | Identifica o repositório associado. |
 | `nomeUsuario` | Registra o nome de usuário identificado na página. |
 | `status` | Identifica a categoria da ação contabilizada. |
+
+A interface do popup apresenta até cinco registros recentes do histórico. Essa limitação se refere à visualização e não implica, por si só, a exclusão dos registros armazenados. A disponibilidade dos registros completos na exportação CSV deve ser verificada na implementação correspondente.
 
 O popup utiliza a permissão de execução de scripts para consultar e alterar esses dados na aba compatível. Por isso, seu funcionamento depende da disponibilidade de uma aba do PreserveHub.
 

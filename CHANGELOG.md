@@ -43,6 +43,8 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Reorganização da detecção de cliques para tratar separadamente as ações de Aprovação e Verificar.
 - Atualização do identificador do elemento flutuante do contador para `janela-contador`.
 - Inclusão de mensagens de diagnóstico para auxiliar na validação da identificação dos campos e das ações.
+- Limitação da exibição do histórico no popup aos cinco registros mais recentes, sem alteração intencional do histórico armazenado.
+- Ocultação e desativação do botão de limpeza do contador e do histórico na interface do popup.
 
 ### Em validação
 

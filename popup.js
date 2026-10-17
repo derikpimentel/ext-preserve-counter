@@ -365,7 +365,7 @@ async function atualizarPopup() {
 
 
         const historico =
-            [...dadosUsuario.historico].reverse();
+            [...dadosUsuario.historico].reverse().slice(0, 5);
 
 
         if (!historico.length) {
