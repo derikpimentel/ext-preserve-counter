@@ -15,10 +15,13 @@ O Contador SAFE tem como objetivo registrar as confirmações realizadas no flux
 - Limpeza do contador e do histórico do usuário atual, mediante confirmação.
 - Exibição de um contador temporário na página.
 - Exportação do histórico do usuário atual para CSV.
+- Detecção da ação de salvamento de metadados para identificar possíveis operações da categoria Verificar.
+- Verificação dos campos Repositório Físico e Localização Física para identificar a categoria Verificar.
+- Proteção contra a contabilização repetida da mesma combinação de identificador único e status já presente no histórico.
 
 > Observação 1: as funcionalidades devem ser consideradas implementadas no código, mas precisam ser verificadas na versão integrada antes de serem declaradas como plenamente validadas.
 
-> Observação 2: a contagem da categoria Verificar depende da implementação e validação do fluxo correspondente no PreserveHub.
+> Observação 2: a categoria Verificar e a prevenção de duplicidades ainda precisam ser validadas no PreserveHub. O comportamento esperado depende da confirmação dos campos identificados, das regras de contabilização e dos testes na versão integrada.
 
 ## Tecnologias
 
@@ -63,6 +66,7 @@ Os registros do histórico incluem informações como:
 | `dataHora` | Registra a data e hora da confirmação. |
 | `repositorioArquivistico` | Identifica o repositório associado. |
 | `nomeUsuario` | Registra o nome de usuário identificado na página. |
+| `status` | Identifica a categoria da ação contabilizada. |
 
 O popup utiliza a permissão de execução de scripts para consultar e alterar esses dados na aba compatível. Por isso, seu funcionamento depende da disponibilidade de uma aba do PreserveHub.
 

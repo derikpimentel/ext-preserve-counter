@@ -10,6 +10,7 @@ const CHAVE_DADOS_USUARIOS = "dadosContadorAprovacaoPorUsuario";
 
 let aguardandoConfirmacao = false;
 let ultimoClique = 0;
+let ultimoCliqueVerificar = 0;
 
 
 // ============================================================
@@ -244,6 +245,40 @@ function registrarAcao(status) {
     );
 
 
+    const identificadorUnico =
+        obterIdentificadorUnico();
+
+
+    // ========================================================
+    // PROTEÇÃO CONTRA DUPLICIDADE
+    // ========================================================
+
+    const registroExistente =
+        dadosUsuario.historico.some(
+            registro =>
+                registro.identificadorUnico ===
+                    identificadorUnico &&
+                registro.status === status
+        );
+
+
+    if (
+        identificadorUnico !== "Não identificado" &&
+        registroExistente
+    ) {
+
+        console.log(
+            `Registro já contabilizado: ${identificadorUnico} - ${status}`
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // NOVO REGISTRO
+    // ========================================================
+
     const registro = {
 
         status: status,
@@ -252,7 +287,7 @@ function registrarAcao(status) {
             obterRepositorioArquivistico(),
 
         identificadorUnico:
-            obterIdentificadorUnico(),
+            identificadorUnico,
 
         dataHora:
             obterDataHoraAtual(),
@@ -298,6 +333,12 @@ function registrarAcao(status) {
     // ========================================================
 
     mostrarContador(dadosUsuario);
+
+
+    console.log(
+        `Objeto contabilizado: ${status}`,
+        registro
+    );
 }
 
 
@@ -324,14 +365,14 @@ let timerOverlay = null;
 function mostrarContador(dadosUsuario) {
 
     let janela =
-        document.querySelector("#janela-contador-cedae");
+        document.querySelector("#janela-contador");
 
 
     if (!janela) {
 
         janela = document.createElement("div");
 
-        janela.id = "janela-contador-cedae";
+        janela.id = "janela-contador";
 
         janela.style.position = "fixed";
         janela.style.top = "20px";
@@ -382,7 +423,9 @@ function mostrarContador(dadosUsuario) {
             margin-top:8px;
             text-align:center;
         ">
-            Confirmação contabilizada
+            ${dadosUsuario.contadorVerificar > 0
+                ? "Ação contabilizada"
+                : "Confirmação contabilizada"}
         </div>
     `;
 
@@ -404,7 +447,217 @@ function mostrarContador(dadosUsuario) {
 
 
 // ============================================================
-// DETECTAR ENVIAR PARA APROVAÇÃO
+// LOCALIZAR INPUT PELO CONTROLE DO MUDBLAZOR
+// ============================================================
+
+function obterInputPorRotulo(rotulo) {
+
+    const rotuloNormalizado =
+        normalizarTexto(rotulo).toUpperCase();
+
+
+    const controles =
+        document.querySelectorAll(
+            ".mud-input-control"
+        );
+
+
+    console.log(
+        `[SAFE] Procurando campo: ${rotulo}`
+    );
+
+
+    for (const controle of controles) {
+
+        const textoControle =
+            normalizarTexto(
+                controle.textContent
+            ).toUpperCase();
+
+
+        const input =
+            controle.querySelector(
+                "input.mud-input-slot"
+            );
+
+
+        if (!input) {
+            continue;
+        }
+
+
+        console.log(
+            "[SAFE] Controle encontrado:",
+            textoControle,
+            "Valor:",
+            input.value
+        );
+
+
+        if (
+            textoControle.includes(
+                rotuloNormalizado
+            )
+        ) {
+
+            console.log(
+                `[SAFE] Campo "${rotulo}" identificado.`,
+                input
+            );
+
+
+            return input;
+        }
+    }
+
+
+    console.warn(
+        `[SAFE] Campo "${rotulo}" não foi encontrado.`
+    );
+
+
+    return null;
+}
+
+
+// ============================================================
+// REPOSITÓRIO FÍSICO
+// ============================================================
+
+function obterRepositorioFisico() {
+
+    const input =
+        obterInputPorRotulo(
+            "Repositorio Fisico"
+        );
+
+
+    if (!input) {
+
+        return "";
+    }
+
+
+    return (
+        input.value ||
+        input.getAttribute("value") ||
+        ""
+    ).trim();
+}
+
+
+// ============================================================
+// LOCALIZAÇÃO FÍSICA
+// ============================================================
+
+function obterLocalizacaoFisica() {
+
+    const input =
+        obterInputPorRotulo(
+            "Localização Fisica"
+        );
+
+
+    if (!input) {
+
+        return "";
+    }
+
+
+    return (
+        input.value ||
+        input.getAttribute("value") ||
+        ""
+    ).trim();
+}
+
+
+// ============================================================
+// VERIFICAR SE EXISTE "VERIFICAR"
+// ============================================================
+
+function possuiVerificar() {
+
+    const repositorioFisico =
+        obterRepositorioFisico();
+
+
+    const localizacaoFisica =
+        obterLocalizacaoFisica();
+
+
+    const repositorioNormalizado =
+        normalizarTexto(
+            repositorioFisico
+        ).toUpperCase();
+
+
+    const localizacaoNormalizada =
+        normalizarTexto(
+            localizacaoFisica
+        ).toUpperCase();
+
+
+    const verificarRepositorio =
+        repositorioNormalizado.includes(
+            "VERIFICAR"
+        );
+
+
+    const verificarLocalizacao =
+        localizacaoNormalizada.includes(
+            "VERIFICAR"
+        );
+
+
+    console.log(
+        "=========================================="
+    );
+
+    console.log(
+        "[SAFE] VERIFICAÇÃO DE A VERIFICAR"
+    );
+
+    console.log(
+        "[SAFE] Repositório Físico:",
+        repositorioFisico
+    );
+
+    console.log(
+        "[SAFE] Localização Física:",
+        localizacaoFisica
+    );
+
+    console.log(
+        "[SAFE] Verificar no Repositório:",
+        verificarRepositorio
+    );
+
+    console.log(
+        "[SAFE] Verificar na Localização:",
+        verificarLocalizacao
+    );
+
+    console.log(
+        "[SAFE] Resultado:",
+        verificarRepositorio ||
+        verificarLocalizacao
+    );
+
+    console.log(
+        "=========================================="
+    );
+
+
+    return (
+        verificarRepositorio ||
+        verificarLocalizacao
+    );
+}
+
+
+// ============================================================
+// DETECÇÃO DE CLIQUES
 // ============================================================
 
 document.addEventListener("click", function (evento) {
@@ -416,65 +669,182 @@ document.addEventListener("click", function (evento) {
     }
 
 
-    const textoBotao =
-        normalizarTexto(botao.textContent).toUpperCase();
+    // ----------------------------------------------------
+    // Primeiro tenta o texto do botão
+    // ----------------------------------------------------
+
+    let textoBotao =
+        normalizarTexto(
+            botao.textContent
+        ).toUpperCase();
 
 
-    // ========================================================
-    // ENVIAR PARA APROVAÇÃO
-    // ========================================================
+    // ----------------------------------------------------
+    // Se não encontrou, procura o mud-button-label
+    // ----------------------------------------------------
+
+    if (!textoBotao) {
+
+        const label =
+            botao.querySelector(
+                ".mud-button-label"
+            );
+
+
+        if (label) {
+
+            textoBotao =
+                normalizarTexto(
+                    label.textContent
+                ).toUpperCase();
+        }
+    }
+
+
+    console.log(
+        "[SAFE] Botão clicado:",
+        textoBotao
+    );
+
+
+    // ====================================================
+    // SALVAR METADADOS
+    // ====================================================
 
     if (
-        textoBotao === "ENVIAR PARA APROVACAO"
+        textoBotao ===
+        "SALVAR METADADOS"
     ) {
 
-        aguardandoConfirmacao = true;
+        console.log(
+            "[SAFE] SALVAR METADADOS detectado."
+        );
+
+
+        const agora =
+            Date.now();
+
+
+        // Proteção contra duplo clique
+        if (
+            agora -
+            ultimoCliqueVerificar
+            < 1000
+        ) {
+
+            console.log(
+                "[SAFE] Clique duplicado ignorado."
+            );
+
+            return;
+        }
+
+
+        ultimoCliqueVerificar =
+            agora;
+
+
+        // ------------------------------------------------
+        // Verifica os campos
+        // ------------------------------------------------
+
+        const deveContabilizar =
+            possuiVerificar();
+
+
+        if (
+            deveContabilizar
+        ) {
+
+            console.log(
+                "[SAFE] >>> REGISTRANDO VERIFICAR <<<"
+            );
+
+
+            registrarAcao(
+                "Verificar"
+            );
+
+        } else {
+
+            console.log(
+                "[SAFE] Nenhum campo contém VERIFICAR."
+            );
+        }
+
 
         return;
     }
 
 
-    // ========================================================
+    // ====================================================
+    // ENVIAR PARA APROVAÇÃO
+    // ====================================================
+
+    if (
+        textoBotao ===
+        "ENVIAR PARA APROVACAO"
+    ) {
+
+        console.log(
+            "[SAFE] ENVIAR PARA APROVAÇÃO detectado."
+        );
+
+
+        aguardandoConfirmacao =
+            true;
+
+
+        return;
+    }
+
+
+    // ====================================================
     // CONFIRMAÇÃO SIM
-    // ========================================================
+    // ====================================================
 
     if (
         aguardandoConfirmacao &&
         textoBotao === "SIM"
     ) {
 
-        const agora = Date.now();
+        const agora =
+            Date.now();
 
 
-        // Proteção contra duplo clique
-        if (agora - ultimoClique < 1000) {
+        if (
+            agora -
+            ultimoClique
+            < 1000
+        ) {
+
             return;
         }
 
 
-        ultimoClique = agora;
+        ultimoClique =
+            agora;
 
 
-        aguardandoConfirmacao = false;
+        aguardandoConfirmacao =
+            false;
 
 
-        registrarAcao("Aprovação");
+        console.log(
+            "[SAFE] >>> REGISTRANDO APROVAÇÃO <<<"
+        );
+
+
+        registrarAcao(
+            "Aprovação"
+        );
     }
 
 });
 
 
 // ============================================================
-// PREPARAÇÃO FUTURA - A VERIFICAR
-// ============================================================
-//
-// A detecção de "A VERIFICAR" ainda não está ativa.
-//
-// Quando identificarmos exatamente o botão/elemento utilizado
-// pela página para essa operação, será possível chamar:
-//
-// registrarAcao("Verificar");
-//
+// INICIALIZAÇÃO
 // ============================================================
 
 console.log(

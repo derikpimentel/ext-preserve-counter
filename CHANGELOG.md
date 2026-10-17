@@ -29,6 +29,9 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Exibição do status de cada registro no histórico.
 - Confirmação antes de zerar o contador e o histórico.
 - Exportação do histórico do usuário atual para CSV, com status, repositório, identificador único, data/hora e nome de usuário.
+- Detecção do acionamento de salvamento de metadados para avaliar operações da categoria Verificar.
+- Identificação dos campos Repositório Físico e Localização Física para auxiliar na classificação da operação.
+- Verificação do histórico por identificador único e status antes de registrar uma nova ocorrência.
 
 ### Alterado
 
@@ -37,26 +40,26 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Substituição da estrutura global de contador e histórico por uma estrutura organizada por usuário.
 - Reorganização do popup para exibir os novos contadores e as informações do histórico.
 - Atualização da identificação e da extração de informações da página.
+- Reorganização da detecção de cliques para tratar separadamente as ações de Aprovação e Verificar.
+- Atualização do identificador do elemento flutuante do contador para `janela-contador`.
+- Inclusão de mensagens de diagnóstico para auxiliar na validação da identificação dos campos e das ações.
 
 ### Em validação
 
-- Identificação correta do registro associado à confirmação.
-- Contagem sem duplicidade em interações repetidas.
-- Persistência e leitura consistente do contador e do histórico.
+- Identificação correta do registro, do usuário e do repositório no PreserveHub.
+- Precisão dos seletores utilizados para identificar os campos e preservação da grafia dos valores.
+- Contagem correta das categorias Aprovação e Verificar.
+- Prevenção de duplicidades sem bloquear novas ocorrências legítimas.
+- Persistência, leitura e consistência dos contadores e do histórico.
 - Exibição do histórico em ordem decrescente de data e hora.
-- Funcionamento do popup e da limpeza dos dados.
-- Integração entre os scripts de conteúdo, popup e processo em segundo plano, caso este último faça parte da arquitetura final.
-- Precisão dos seletores utilizados para identificar usuário e repositório.
-- Preservação da grafia do nome do repositório.
-- Comportamento da contagem quando uma das informações não é encontrada.
-- Consistência da interface após zerar o contador e o histórico.
-- Consistência da chave de armazenamento entre os scripts.
-- Correspondência entre o contador salvo e o contador apresentado no popup.
-- Isolamento dos dados por usuários.
-- Tratamento de dados inválidos e falhas na identificação dos campos.
-- Compatibilidade com os registros armazenados pela estrutura anterior.
-- Detecção da categoria Verificar.
-- Integridade, compatibilidade com planilhas e segurança dos dados exportados para CSV.
+- Consistência da interface após zerar os dados.
+- Isolamento dos dados entre usuários.
+- Tratamento de dados armazenados inválidos e de falhas na identificação dos campos.
+- Compatibilidade com registros armazenados pela estrutura anterior.
+- Funcionamento da exportação CSV, incluindo acentos, caracteres especiais e proteção contra fórmulas em planilhas.
+- Correspondência entre o status contabilizado e a mensagem apresentada no contador flutuante.
+- Compatibilidade do identificador do contador flutuante com os demais arquivos da extensão.
+- Funcionamento da extensão após a integração dos scripts e permissões definidos no manifesto.
 
 ## Versão declarada no manifesto
 
