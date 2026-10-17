@@ -34,6 +34,9 @@ const historicoElemento =
 const botaoZerar =
     document.getElementById("zerar");
 
+const botaoExportarCSV =
+    document.getElementById("exportar-csv");
+
 
 // ============================================================
 // NORMALIZAÇÃO
@@ -729,6 +732,237 @@ botaoZerar.addEventListener(
 
 
         await zerarDados();
+    }
+);
+
+
+// ============================================================
+// EXPORTAR HISTÓRICO PARA CSV
+// ============================================================
+
+function escaparCampoCSV(valor) {
+
+    if (valor === null || valor === undefined) {
+        return "";
+    }
+
+    valor = String(valor);
+
+    // Evita que conteúdos sejam interpretados
+    // como fórmulas ao abrir o CSV em planilhas.
+    if (/^[\t\r\n ]*[=+\-@]/.test(valor)) {
+        valor = "'" + valor;
+    }
+
+    // Escapa aspas duplas
+    valor = valor.replace(/"/g, '""');
+
+    // Coloca o campo entre aspas
+    return `"${valor}"`;
+}
+
+
+function gerarCSV(historico) {
+
+    const cabecalho = [
+        "Status",
+        "Repositório Arquivístico",
+        "Identificador Único",
+        "Data/Hora",
+        "Nome de Usuário"
+    ];
+
+
+    const linhas = [];
+
+    // Cabeçalho
+    linhas.push(
+        cabecalho
+            .map(escaparCampoCSV)
+            .join(";")
+    );
+
+
+    // Dados
+    for (const registro of historico) {
+
+        const linha = [
+
+            registro.status || "",
+
+            registro.repositorioArquivistico || "",
+
+            registro.identificadorUnico || "",
+
+            registro.dataHora || "",
+
+            registro.nomeUsuario || ""
+
+        ];
+
+
+        linhas.push(
+            linha
+                .map(escaparCampoCSV)
+                .join(";")
+        );
+    }
+
+
+    /*
+     * BOM UTF-8
+     *
+     * O \uFEFF faz o Excel reconhecer
+     * corretamente o arquivo como UTF-8.
+     */
+
+    return "\uFEFF" + linhas.join("\r\n");
+}
+
+
+// ============================================================
+// EXPORTAR CSV
+// ============================================================
+
+async function exportarCSV() {
+
+    try {
+
+        const dados =
+            await obterDadosPagina();
+
+
+        const historico = dados?.dadosUsuario?.historico;
+        
+
+        if (!Array.isArray(historico)) {
+            throw new Error("Histórico inválido para exportação.");
+        }
+
+
+        if (!historico.length) {
+
+            alert(
+                "Não existem registros no histórico para exportar."
+            );
+
+            return;
+        }
+
+
+        // ----------------------------------------------------
+        // GERA CSV
+        // ----------------------------------------------------
+
+        const conteudoCSV =
+            gerarCSV(historico);
+
+
+        // ----------------------------------------------------
+        // CRIA ARQUIVO
+        // ----------------------------------------------------
+
+        const blob =
+            new Blob(
+                [conteudoCSV],
+                {
+                    type: "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        // ----------------------------------------------------
+        // NOME DO ARQUIVO
+        // ----------------------------------------------------
+
+        const nomeUsuario =
+            normalizarTexto(
+                dados.nomeUsuario
+            )
+            .replace(/\s+/g, "_")
+            .replace(/[^a-zA-Z0-9_-]/g, "");
+
+
+        const dataAtual =
+            new Date();
+
+
+        const ano =
+            dataAtual.getFullYear();
+
+
+        const mes =
+            String(
+                dataAtual.getMonth() + 1
+            ).padStart(2, "0");
+
+
+        const dia =
+            String(
+                dataAtual.getDate()
+            ).padStart(2, "0");
+
+
+        const nomeArquivo =
+            `Relatorio_Completo_${nomeUsuario}_${ano}-${mes}-${dia}.csv`;
+
+
+        // ----------------------------------------------------
+        // DOWNLOAD
+        // ----------------------------------------------------
+
+        const link =
+            document.createElement("a");
+
+
+        link.href = url;
+
+        link.download = nomeArquivo;
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+
+        // Libera o objeto
+        setTimeout(() => {
+
+            URL.revokeObjectURL(url);
+
+        }, 1000);
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao exportar CSV:",
+            erro
+        );
+
+
+        alert(
+            "Não foi possível exportar o relatório CSV."
+        );
+    }
+}
+
+
+// ============================================================
+// EVENTO - EXPORTAR CSV
+// ============================================================
+
+botaoExportarCSV.addEventListener(
+    "click",
+    async () => {
+
+        await exportarCSV();
+
     }
 );
 

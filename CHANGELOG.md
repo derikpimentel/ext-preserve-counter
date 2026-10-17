@@ -28,6 +28,7 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Exibição do total geral e dos totais por categoria no popup.
 - Exibição do status de cada registro no histórico.
 - Confirmação antes de zerar o contador e o histórico.
+- Exportação do histórico do usuário atual para CSV, com status, repositório, identificador único, data/hora e nome de usuário.
 
 ### Alterado
 
@@ -55,6 +56,7 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Tratamento de dados inválidos e falhas na identificação dos campos.
 - Compatibilidade com os registros armazenados pela estrutura anterior.
 - Detecção da categoria Verificar.
+- Integridade, compatibilidade com planilhas e segurança dos dados exportados para CSV.
 
 ## Versão declarada no manifesto
 

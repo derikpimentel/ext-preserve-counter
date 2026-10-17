@@ -70,7 +70,7 @@ function obterIdentificadorUnico() {
 
 
         // Exemplo:
-        // PRT.001.00644161/2026-18
+        // PRT.001.xxxxxxxx/xxxx-xx
 
         const correspondencia =
             texto.match(
@@ -355,7 +355,7 @@ function mostrarContador(dadosUsuario) {
 
     janela.innerHTML = `
         <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">
-            Contador CEDAE
+            Contador SAFE
         </div>
 
         <div style="font-size:30px;font-weight:bold;text-align:center;">

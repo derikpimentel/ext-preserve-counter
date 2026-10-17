@@ -14,6 +14,7 @@ O Contador SAFE tem como objetivo registrar as confirmações realizadas no flux
 - Consulta dos dados do usuário identificado no PreserveHub.
 - Limpeza do contador e do histórico do usuário atual, mediante confirmação.
 - Exibição de um contador temporário na página.
+- Exportação do histórico do usuário atual para CSV.
 
 > Observação 1: as funcionalidades devem ser consideradas implementadas no código, mas precisam ser verificadas na versão integrada antes de serem declaradas como plenamente validadas.
 

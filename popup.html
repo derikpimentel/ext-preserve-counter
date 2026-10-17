@@ -71,20 +71,36 @@ CRIADO POR DERIK PIMENTEL
       color: #666;
     }
 
+    .botoes-acoes {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .botoes-acoes button {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
     #zerar {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: none;
-      border-radius: 6px;
       background: #c62828;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
     }
 
     #zerar:hover {
       background: #a91f1f;
+    }
+
+    #exportar-csv {
+        background: #2e7d32;
+    }
+
+    #exportar-csv:hover {
+        background: #1b5e20;
     }
 
     .informacoes {
@@ -226,13 +242,21 @@ CRIADO POR DERIK PIMENTEL
 
     <!--
     =====================================================
-    BOTÃO ZERAR
+    BOTÕES
     =====================================================
     -->
 
-    <button id="zerar">
-        Zerar contador e histórico
-    </button>
+    <div class="botoes-acoes">
+
+        <button id="zerar">
+            Zerar contador e histórico
+        </button>
+
+        <button id="exportar-csv">
+            Exportar CSV
+        </button>
+
+    </div>
 
 
     <!--
