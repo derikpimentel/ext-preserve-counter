@@ -45,6 +45,7 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Inclusão de mensagens de diagnóstico para auxiliar na validação da identificação dos campos e das ações.
 - Limitação da exibição do histórico no popup aos cinco registros mais recentes, sem alteração intencional do histórico armazenado.
 - Ocultação e desativação do botão de limpeza do contador e do histórico na interface do popup.
+- Implementada a transição de um registro existente de Verificar para Aprovação, com atualização do status e dos contadores correspondentes.
 
 ### Em validação
 
@@ -62,6 +63,8 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Correspondência entre o status contabilizado e a mensagem apresentada no contador flutuante.
 - Compatibilidade do identificador do contador flutuante com os demais arquivos da extensão.
 - Funcionamento da extensão após a integração dos scripts e permissões definidos no manifesto.
+- Confirmar que a transição mantém o histórico sem duplicar o registro.
+- Validar o comportamento com dados armazenados inválidos e a ausência de erros no console.
 
 ## Versão declarada no manifesto
 

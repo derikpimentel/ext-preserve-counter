@@ -212,41 +212,161 @@ function obterDadosUsuario(dadosUsuarios, chaveUsuario) {
 
 function registrarAcao(status) {
 
-    const nomeUsuario = obterUsuarioLogado();
-
-    const chaveUsuario = obterChaveUsuario(nomeUsuario);
-
-    let dadosUsuarios = {};
-
-    try {
-
-        const dadosSalvos = localStorage.getItem(
-            CHAVE_DADOS_USUARIOS
+    const dadosUsuarios =
+        JSON.parse(
+            localStorage.getItem(CHAVE_DADOS_USUARIOS) || "{}"
         );
 
-        if (dadosSalvos) {
-            dadosUsuarios = JSON.parse(dadosSalvos);
-        }
+    // CORREÇÃO:
+    // A função existente no código é obterUsuarioLogado()
+    const usuarioAtual =
+        obterUsuarioLogado();
 
-    } catch (erro) {
-
-        console.error(
-            "Erro ao ler dados do contador:",
-            erro
+    if (
+        !usuarioAtual ||
+        usuarioAtual === "Usuário não identificado"
+    ) {
+        console.warn(
+            "[SAFE] Não foi possível identificar o usuário."
         );
-
-        dadosUsuarios = {};
+        return;
     }
 
+    const chaveUsuario =
+        obterChaveUsuario(usuarioAtual);
 
     const dadosUsuario = obterDadosUsuario(
         dadosUsuarios,
         chaveUsuario
     );
 
-
     const identificadorUnico =
         obterIdentificadorUnico();
+
+    const repositorioArquivistico =
+        obterRepositorioArquivistico();
+
+    const dataHora =
+        obterDataHoraAtual();
+
+
+    console.log("==========================================");
+    console.log("[SAFE] REGISTRAR AÇÃO");
+    console.log("[SAFE] Status:", status);
+    console.log("[SAFE] Usuário:", usuarioAtual);
+    console.log("[SAFE] Chave usuário:", chaveUsuario);
+    console.log("[SAFE] Identificador:", identificadorUnico);
+    console.log(
+        "[SAFE] Repositório:",
+        repositorioArquivistico
+    );
+    console.log("==========================================");
+
+
+    // ============================================================
+    // TRANSIÇÃO:
+    //
+    // VERIFICAR → APROVAÇÃO
+    //
+    // O mesmo objeto não deve ocupar duas posições no contador.
+    // ============================================================
+
+    if (status === "Aprovação") {
+
+        const registroVerificar =
+            dadosUsuario.historico.find(
+                registro =>
+                    registro.identificadorUnico ===
+                        identificadorUnico &&
+                    registro.status === "Verificar"
+            );
+
+        if (registroVerificar) {
+
+            console.log(
+                "[SAFE] Objeto encontrado como VERIFICAR."
+            );
+
+            console.log(
+                "[SAFE] Executando transição VERIFICAR → APROVAÇÃO."
+            );
+
+
+            // ----------------------------------------------------
+            // Remove do contador de Verificar
+            // ----------------------------------------------------
+
+            if (
+                dadosUsuario.contadorVerificar > 0
+            ) {
+                dadosUsuario.contadorVerificar--;
+            }
+
+
+            // ----------------------------------------------------
+            // Adiciona ao contador de Aprovação
+            // ----------------------------------------------------
+
+            dadosUsuario.contadorAprovacao++;
+
+
+            // ----------------------------------------------------
+            // Altera o registro existente
+            // ----------------------------------------------------
+
+            registroVerificar.status =
+                "Aprovação";
+
+            registroVerificar.dataHora =
+                dataHora;
+
+            registroVerificar.repositorioArquivistico =
+                repositorioArquivistico;
+
+            registroVerificar.nomeUsuario =
+                usuarioAtual;
+
+
+            // ----------------------------------------------------
+            // Salva
+            // ----------------------------------------------------
+
+            localStorage.setItem(
+                CHAVE_DADOS_USUARIOS,
+                JSON.stringify(dadosUsuarios)
+            );
+
+
+            // ----------------------------------------------------
+            // Atualiza o contador visual
+            // ----------------------------------------------------
+
+            mostrarContador(dadosUsuario);
+
+
+            console.log(
+                "[SAFE] VERIFICAR → APROVAÇÃO concluído."
+            );
+
+            console.log(
+                "[SAFE] Aprovação:",
+                dadosUsuario.contadorAprovacao
+            );
+
+            console.log(
+                "[SAFE] Verificar:",
+                dadosUsuario.contadorVerificar
+            );
+
+            console.log(
+                "[SAFE] Total:",
+                dadosUsuario.contadorAprovacao +
+                dadosUsuario.contadorVerificar
+            );
+
+            return;
+        }
+    }
 
 
     // ========================================================
@@ -279,22 +399,29 @@ function registrarAcao(status) {
     // NOVO REGISTRO
     // ========================================================
 
-    const registro = {
+    const novoRegistro = {
 
         status: status,
 
         repositorioArquivistico:
-            obterRepositorioArquivistico(),
+            repositorioArquivistico,
 
         identificadorUnico:
             identificadorUnico,
 
         dataHora:
-            obterDataHoraAtual(),
+            dataHora,
 
         nomeUsuario:
-            nomeUsuario
+            usuarioAtual
     };
+
+
+    // ========================================================
+    // HISTÓRICO
+    // ========================================================
+
+    dadosUsuario.historico.push(novoRegistro);
 
 
     // ========================================================
@@ -309,13 +436,6 @@ function registrarAcao(status) {
 
         dadosUsuario.contadorVerificar++;
     }
-
-
-    // ========================================================
-    // HISTÓRICO
-    // ========================================================
-
-    dadosUsuario.historico.push(registro);
 
 
     // ========================================================
@@ -335,9 +455,14 @@ function registrarAcao(status) {
     mostrarContador(dadosUsuario);
 
 
+    // ============================================================
+    // LOG
+    // ============================================================
+
+
     console.log(
         `Objeto contabilizado: ${status}`,
-        registro
+        novoRegistro
     );
 }
 
