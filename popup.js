@@ -37,6 +37,9 @@ const botaoZerar =
 const botaoExportarCSV =
     document.getElementById("exportar-csv");
 
+const dataAtualElemento =
+    document.getElementById("data-atual");
+
 
 // ============================================================
 // NORMALIZAÇÃO
@@ -297,6 +300,119 @@ async function obterDadosPagina() {
 
 
 // ============================================================
+// DATA E HISTÓRICO DA DATA ATUAL
+// ============================================================
+
+function obterDataAtual() {
+
+    const agora = new Date();
+
+    const dia =
+        String(agora.getDate())
+            .padStart(2, "0");
+
+    const mes =
+        String(agora.getMonth() + 1)
+            .padStart(2, "0");
+
+    const ano =
+        agora.getFullYear();
+
+    return `${dia}/${mes}/${ano}`;
+}
+
+
+function obterHistoricoDoDia(historico) {
+
+    const dataAtual =
+        obterDataAtual();
+
+    return (
+        Array.isArray(historico)
+            ? historico
+            : []
+    ).filter(registro => {
+
+        return (
+            typeof registro.dataHora === "string" &&
+            registro.dataHora.startsWith(
+                dataAtual
+            )
+        );
+    });
+}
+
+
+function obterContadoresDoDia(historico) {
+
+    const historicoDoDia =
+        obterHistoricoDoDia(historico);
+
+    let contadorAprovacao = 0;
+
+    let contadorVerificar = 0;
+
+
+    for (
+        const registro of historicoDoDia
+    ) {
+
+        if (
+            registro.status ===
+            "Aprovação"
+        ) {
+
+            contadorAprovacao++;
+
+        } else if (
+            registro.status ===
+            "Verificar"
+        ) {
+
+            contadorVerificar++;
+        }
+    }
+
+
+    return {
+
+        contadorAprovacao,
+
+        contadorVerificar,
+
+        contadorTotal:
+            contadorAprovacao +
+            contadorVerificar
+    };
+}
+
+
+function obterHora(dataHora) {
+
+    if (
+        typeof dataHora !== "string" ||
+        dataHora.length < 8
+    ) {
+
+        return "-";
+    }
+
+
+    const partes =
+        dataHora.trim().split(" ");
+
+
+    if (partes.length >= 2) {
+
+        return partes[1];
+    }
+
+
+    return dataHora;
+}
+
+
+// ============================================================
 // ATUALIZAR POPUP
 // ============================================================
 
@@ -313,20 +429,33 @@ async function atualizarPopup() {
 
 
         // ================================================
-        // CONTADORES
+        // CONTADORES DO DIA
         // ================================================
 
+        const historicoCompleto =
+            dadosUsuario.historico || [];
+
+
+        const contadoresDoDia =
+            obterContadoresDoDia(
+                historicoCompleto
+            );
+
+
         const contadorAprovacao =
-            dadosUsuario.contadorAprovacao || 0;
+            contadoresDoDia.contadorAprovacao;
 
 
         const contadorVerificar =
-            dadosUsuario.contadorVerificar || 0;
+            contadoresDoDia.contadorVerificar;
 
 
         const contadorTotal =
-            contadorAprovacao +
-            contadorVerificar;
+            contadoresDoDia.contadorTotal;
+
+
+        const dataAtual =
+            obterDataAtual();
 
 
         contadorElemento.textContent =
@@ -358,6 +487,14 @@ async function atualizarPopup() {
 
 
         // ================================================
+        // DATA ATUAL
+        // ================================================
+
+        dataAtualElemento.textContent =
+            dataAtual;
+
+
+        // ================================================
         // HISTÓRICO
         // ================================================
 
@@ -365,7 +502,13 @@ async function atualizarPopup() {
 
 
         const historico =
-            [...dadosUsuario.historico].reverse().slice(0, 5);
+            [
+                ...obterHistoricoDoDia(
+                    historicoCompleto
+                )
+            ]
+                .reverse()
+                .slice(0, 5);
 
 
         if (!historico.length) {
@@ -775,7 +918,11 @@ function gerarCSV(historico) {
 
     const linhas = [];
 
-    // Cabeçalho
+
+    // ================================================
+    // CABEÇALHO
+    // ================================================
+
     linhas.push(
         cabecalho
             .map(escaparCampoCSV)
@@ -783,7 +930,10 @@ function gerarCSV(historico) {
     );
 
 
-    // Dados
+    // ================================================
+    // DADOS
+    // ================================================
+
     for (const registro of historico) {
 
         const linha = [
@@ -831,6 +981,13 @@ async function exportarCSV() {
         const dados =
             await obterDadosPagina();
 
+
+        // IMPORTANTE:
+        // Aqui usamos o histórico COMPLETO.
+        //
+        // Portanto, mesmo que o popup mostre somente
+        // os registros do dia, o CSV continua contendo
+        // todo o histórico armazenado.
 
         const historico = dados?.dadosUsuario?.historico;
         
@@ -930,7 +1087,10 @@ async function exportarCSV() {
         document.body.removeChild(link);
 
 
-        // Libera o objeto
+        // ================================================
+        // LIBERAR OBJETO
+        // ================================================
+
         setTimeout(() => {
 
             URL.revokeObjectURL(url);

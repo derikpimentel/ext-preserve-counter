@@ -46,6 +46,9 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Limitação da exibição do histórico no popup aos cinco registros mais recentes, sem alteração intencional do histórico armazenado.
 - Ocultação e desativação do botão de limpeza do contador e do histórico na interface do popup.
 - Implementada a transição de um registro existente de Verificar para Aprovação, com atualização do status e dos contadores correspondentes.
+-Contadores do popup e do contador flutuante ajustados para considerar os registros do dia atual.
+- Histórico visível no popup filtrado pela data atual, mantendo a exibição limitada aos cinco registros mais recentes.
+- Exportação CSV mantida com base no histórico completo armazenado.
 
 ### Em validação
 
@@ -65,6 +68,9 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Funcionamento da extensão após a integração dos scripts e permissões definidos no manifesto.
 - Confirmar que a transição mantém o histórico sem duplicar o registro.
 - Validar o comportamento com dados armazenados inválidos e a ausência de erros no console.
+- Compatibilidade do filtro diário com os formatos de data existentes.
+- Comportamento da contagem diária na transição de Verificar para Aprovação.
+- Consistência entre os contadores do popup e do contador flutuante.
 
 ## Versão declarada no manifesto
 

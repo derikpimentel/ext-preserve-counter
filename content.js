@@ -171,6 +171,87 @@ function obterDataHoraAtual() {
 
 
 // ============================================================
+// DATA ATUAL
+// ============================================================
+
+function obterDataAtual() {
+
+    const agora = new Date();
+
+    const dia =
+        String(agora.getDate()).padStart(2, "0");
+
+    const mes =
+        String(agora.getMonth() + 1).padStart(2, "0");
+
+    const ano =
+        agora.getFullYear();
+
+    return `${dia}/${mes}/${ano}`;
+}
+
+
+// ============================================================
+// HISTÓRICO DO DIA
+// ============================================================
+
+function obterHistoricoDoDia(dadosUsuario) {
+
+    const dataAtual =
+        obterDataAtual();
+
+    const historico =
+        Array.isArray(dadosUsuario.historico)
+            ? dadosUsuario.historico
+            : [];
+
+    return historico.filter(registro => {
+
+        return (
+            typeof registro.dataHora === "string" &&
+            registro.dataHora.startsWith(dataAtual)
+        );
+    });
+}
+
+
+// ============================================================
+// CONTADORES DO DIA
+// ============================================================
+
+function obterContadoresDoDia(dadosUsuario) {
+
+    const historicoDoDia =
+        obterHistoricoDoDia(dadosUsuario);
+
+    let contadorAprovacao = 0;
+    let contadorVerificar = 0;
+
+    for (const registro of historicoDoDia) {
+
+        if (registro.status === "Aprovação") {
+
+            contadorAprovacao++;
+
+        } else if (
+            registro.status === "Verificar"
+        ) {
+
+            contadorVerificar++;
+        }
+    }
+
+    return {
+        contadorAprovacao,
+        contadorVerificar,
+        contadorTotal:
+            contadorAprovacao +
+            contadorVerificar
+    };
+}
+
+
+// ============================================================
 // ESTRUTURA PADRÃO DO USUÁRIO
 // ============================================================
 
@@ -473,10 +554,9 @@ function registrarAcao(status) {
 
 function obterContadorTotal(dadosUsuario) {
 
-    return (
-        (dadosUsuario.contadorAprovacao || 0) +
-        (dadosUsuario.contadorVerificar || 0)
-    );
+    return obterContadoresDoDia(
+        dadosUsuario
+    ).contadorTotal;
 }
 
 
@@ -504,6 +584,7 @@ function mostrarContador(dadosUsuario) {
         janela.style.right = "20px";
         janela.style.zIndex = "999999";
         janela.style.background = "#ffffff";
+        janela.style.color = "#000000";
         janela.style.border = "1px solid #ccc";
         janela.style.borderRadius = "8px";
         janela.style.padding = "15px";
@@ -516,7 +597,18 @@ function mostrarContador(dadosUsuario) {
     }
 
 
-    const total = obterContadorTotal(dadosUsuario);
+    const contadoresDoDia =
+        obterContadoresDoDia(
+            dadosUsuario
+        );
+
+    const total = contadoresDoDia.contadorTotal;
+
+    const dataAtual =
+        obterDataAtual();
+
+    const repositorio =
+        obterRepositorioArquivistico();
 
 
     janela.innerHTML = `
@@ -529,28 +621,30 @@ function mostrarContador(dadosUsuario) {
         </div>
 
         <div style="font-size:12px;text-align:center;margin-bottom:10px;">
-            Total Geral
+            Total do dia
         </div>
 
         <div style="font-size:13px;">
             <strong>Aprovação:</strong>
-            ${dadosUsuario.contadorAprovacao}
+            ${contadoresDoDia.contadorAprovacao}
         </div>
 
         <div style="font-size:13px;">
             <strong>Verificar:</strong>
-            ${dadosUsuario.contadorVerificar}
+            ${contadoresDoDia.contadorVerificar}
         </div>
 
         <div style="
             font-size:12px;
             color:#555;
             margin-top:8px;
-            text-align:center;
+            line-height:1.5;
         ">
-            ${dadosUsuario.contadorVerificar > 0
-                ? "Ação contabilizada"
-                : "Confirmação contabilizada"}
+            <strong>Repositório:</strong>
+            ${repositorio}
+            <br>
+            <strong>Data:</strong>
+            ${dataAtual}
         </div>
     `;
 
@@ -873,12 +967,8 @@ document.addEventListener("click", function (evento) {
         // Verifica os campos
         // ------------------------------------------------
 
-        const deveContabilizar =
-            possuiVerificar();
-
-
         if (
-            deveContabilizar
+            possuiVerificar()
         ) {
 
             console.log(
