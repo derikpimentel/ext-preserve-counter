@@ -1,6 +1,6 @@
 # Changelog
 
-Este arquivo registra as mudanças relevantes do Contador SAFE ao longo do desenvolvimento.
+Este arquivo registra as mudanças relevantes do SAFE-PreserveHub ao longo do desenvolvimento.
 
 O formato segue uma organização inspirada no Keep a Changelog. As entradas descrevem a evolução funcional do projeto; não significam, necessariamente, que cada funcionalidade tenha sido validada em todos os cenários.
 
@@ -49,6 +49,11 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 -Contadores do popup e do contador flutuante ajustados para considerar os registros do dia atual.
 - Histórico visível no popup filtrado pela data atual, mantendo a exibição limitada aos cinco registros mais recentes.
 - Exportação CSV mantida com base no histórico completo armazenado.
+- Renomeação da extensão de Contador SAFE para SAFE-PreserveHub.
+- Atualização da chave de armazenamento para dadosContadorPorUsuario.
+- Ampliação dos endereços configurados para execução da extensão, incluindo os ambientes CEDAE e FAETEC.
+- Atualização do cabeçalho do popup e do contador flutuante.
+- Inclusão da logo na interface do popup.
 
 ### Em validação
 
@@ -71,6 +76,9 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Compatibilidade do filtro diário com os formatos de data existentes.
 - Comportamento da contagem diária na transição de Verificar para Aprovação.
 - Consistência entre os contadores do popup e do contador flutuante.
+- Funcionamento integrado nos ambientes CEDAE e FAETEC.
+- Necessidade de acesso HTTP no ambiente FAETEC.
+- Identificação de usuário e repositório, contabilização e exportação nos ambientes adicionados.
 
 ## Versão declarada no manifesto
 

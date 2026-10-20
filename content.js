@@ -1,12 +1,12 @@
 // ============================================================
-// CONTADOR SAFE
+// SAFE-PRESERVEHUB
 // VERSÃO 1.0.0
 // CRIADO POR DERIK PIMENTEL
 // ============================================================
 
 const VERSAO = "1.0.0";
 
-const CHAVE_DADOS_USUARIOS = "dadosContadorAprovacaoPorUsuario";
+const CHAVE_DADOS_USUARIOS = "dadosContadorPorUsuario";
 
 let aguardandoConfirmacao = false;
 let ultimoClique = 0;
@@ -613,7 +613,7 @@ function mostrarContador(dadosUsuario) {
 
     janela.innerHTML = `
         <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">
-            Contador SAFE
+            SAFE-PreserveHub
         </div>
 
         <div style="font-size:30px;font-weight:bold;text-align:center;">
@@ -1063,5 +1063,5 @@ document.addEventListener("click", function (evento) {
 // ============================================================
 
 console.log(
-    `Contador SAFE v${VERSAO} carregado.`
+    `SAFE-PreserveHub v${VERSAO} carregado.`
 );

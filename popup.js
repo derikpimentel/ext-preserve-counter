@@ -1,12 +1,12 @@
 // ============================================================
-// CONTADOR SAFE - POPUP
+// SAFE-PRESERVEHUB - POPUP
 // VERSÃO 1.0.0
 // CRIADO POR DERIK PIMENTEL
 // ============================================================
 
 const VERSAO = "1.0.0";
 
-const CHAVE_DADOS_USUARIOS = "dadosContadorAprovacaoPorUsuario";
+const CHAVE_DADOS_USUARIOS = "dadosContadorPorUsuario";
 
 
 // ============================================================
@@ -81,12 +81,21 @@ async function obterDadosPagina() {
     const aba = abas[0];
 
 
-    if (
-        !aba.url ||
-        !aba.url.startsWith(
-            "https://preserve.cedae.com.br/"
-        )
-    ) {
+    const ambientesSuportados = [
+        "https://preserve.cedae.com.br/",
+        "http://preserve.faetec.rj.gov.br/",
+        "https://preserve.faetec.rj.gov.br/"
+    ];
+
+
+    const ambienteSuportado =
+        !!aba.url &&
+        ambientesSuportados.some(
+            urlBase => aba.url.startsWith(urlBase)
+        );
+
+
+    if (!ambienteSuportado) {
 
         throw new Error(
             "A página atual não é o PreserveHub."
@@ -208,7 +217,7 @@ async function obterDadosPagina() {
 
                     const dadosSalvos =
                         localStorage.getItem(
-                            "dadosContadorAprovacaoPorUsuario"
+                            "dadosContadorPorUsuario"
                         );
 
 
@@ -693,12 +702,21 @@ async function zerarDados() {
         const aba = abas[0];
 
 
-        if (
-            !aba.url ||
-            !aba.url.startsWith(
-                "https://preserve.cedae.com.br/"
-            )
-        ) {
+        const ambientesSuportados = [
+            "https://preserve.cedae.com.br/",
+            "http://preserve.faetec.rj.gov.br/",
+            "https://preserve.faetec.rj.gov.br/"
+        ];
+
+
+        const ambienteSuportado =
+            !!aba.url &&
+            ambientesSuportados.some(
+                urlBase => aba.url.startsWith(urlBase)
+            );
+
+
+        if (!ambienteSuportado) {
 
             throw new Error(
                 "Abra o PreserveHub para zerar os dados."
@@ -789,7 +807,7 @@ async function zerarDados() {
 
                     const dadosSalvos =
                         localStorage.getItem(
-                            "dadosContadorAprovacaoPorUsuario"
+                            "dadosContadorPorUsuario"
                         );
 
 
@@ -828,7 +846,7 @@ async function zerarDados() {
 
                 localStorage.setItem(
 
-                    "dadosContadorAprovacaoPorUsuario",
+                    "dadosContadorPorUsuario",
 
                     JSON.stringify(dadosUsuarios)
                 );

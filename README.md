@@ -1,9 +1,9 @@
-# Contador SAFE
-Extensão de navegador desenvolvida para auxiliar na contagem e no acompanhamento de confirmações de envio para aprovação no PreserveHub.
+# SAFE-PreserveHub
+Extensão de navegador desenvolvida para auxiliar na contagem e no acompanhamento de confirmações de envio para aprovação e processos a verificar no PreserveHub.
 
 ## Objetivo
 
-O Contador SAFE tem como objetivo registrar as confirmações realizadas no fluxo de envio para aprovação, facilitando o acompanhamento da quantidade de operações contabilizadas e a consulta ao histórico dos registros.
+O SAFE-PreserveHub tem como objetivo registrar as confirmações realizadas no fluxo de envio para aprovação, e contabilizar processos analisados ainda a verificar, facilitando o acompanhamento da quantidade de operações contabilizadas e a consulta ao histórico dos registros.
 
 A interface apresenta os totais referentes ao dia atual, enquanto o histórico armazenado permite manter registros de diferentes datas.
 
@@ -41,8 +41,12 @@ A interface apresenta os totais referentes ao dia atual, enquanto o histórico a
 ## Requisitos
 
 - Navegador compatível com extensões baseadas no Manifest V3.
-- Acesso ao PreserveHub.
+- Acesso a um dos ambientes configurados no manifesto:
+ - https://preserve.cedae.com.br/
+ - http://preserve.faetec.rj.gov.br/
+ - https://preserve.faetec.rj.gov.br/
 - Permissões de extensão declaradas no arquivo `manifest.json`.
+- Arquivo Logo_SAFE.png presente na pasta da extensão.
 
 ## Instalação para desenvolvimento
 
@@ -75,13 +79,13 @@ Na transição de um registro de Verificar para Aprovação, a data associada ao
 
 Na implementação atualmente discutida, o contador e o histórico são armazenados no `localStorage` da página do PreserveHub, organizados por usuário.
 
-A chave de armazenamento utilizada é  `dadosContadorAprovacaoPorUsuario`. Para cada usuário identificado, a estrutura contém:
+A chave de armazenamento utilizada é  `dadosContadorPorUsuario`. Para cada usuário identificado, a estrutura contém:
 
 - `contadorAprovacao`: total de acionamentos da categoria Aprovação.
 - `contadorVerificar`: total de acionamentos da categoria Verificar.
 - `historico`: lista de registros associados ao usuário.
 
-Os contadores acumulados são mantidos na estrutura de armazenamento. A interface diária descrita neste documento calcula seus valores a partir do histórico filtrado pela data atual.
+Os dados são armazenados no contexto da origem da página. Portanto, ambientes acessados por endereços diferentes possuem armazenamentos separados.
 
 Os registros do histórico incluem os seguintes campos:
 

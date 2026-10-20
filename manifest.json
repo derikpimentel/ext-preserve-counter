@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Contador SAFE",
+  "name": "SAFE-PreserveHub",
   "version": "1.0.0",
   "description": "Contador de acionamentos realizados no PreserveHub.",
   
@@ -10,13 +10,17 @@
   ],
 
   "host_permissions": [
-    "https://preserve.cedae.com.br/*"
+    "https://preserve.cedae.com.br/*",
+    "http://preserve.faetec.rj.gov.br/*",
+    "https://preserve.faetec.rj.gov.br/*"
   ],
 
   "content_scripts": [
     {
       "matches": [
-        "https://preserve.cedae.com.br/*"
+        "https://preserve.cedae.com.br/*",
+        "http://preserve.faetec.rj.gov.br/*",
+        "https://preserve.faetec.rj.gov.br/*"
       ],
       "js": [
         "content.js"
@@ -28,6 +32,6 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": "Logo_SAFE.png",
-    "default_title": "Contador SAFE"
+    "default_title": "SAFE-PreserveHub"
   }
 }
