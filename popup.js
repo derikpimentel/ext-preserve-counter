@@ -31,9 +31,6 @@ const repositorioElemento =
 const historicoElemento =
     document.getElementById("historico");
 
-const botaoZerar =
-    document.getElementById("zerar");
-
 const botaoExportarCSV =
     document.getElementById("exportar-csv");
 
@@ -68,8 +65,7 @@ function obterChaveUsuario(nomeUsuario) {
 async function obterDadosPagina() {
 
     const abas = await chrome.tabs.query({
-        active: true,
-        currentWindow: true
+        active: true, currentWindow: true
     });
 
 
@@ -89,8 +85,7 @@ async function obterDadosPagina() {
 
 
     const ambienteSuportado =
-        !!aba.url &&
-        ambientesSuportados.some(
+        !!aba.url && ambientesSuportados.some(
             urlBase => aba.url.startsWith(urlBase)
         );
 
@@ -122,17 +117,9 @@ async function obterDadosPagina() {
                 }
 
 
-                function obterChaveUsuario(nomeUsuario) {
-
-                    return normalizarTexto(
-                        nomeUsuario
-                    ).toUpperCase();
-                }
-
-
-                // ============================================
+                // --------------------------------------------
                 // USUÁRIO
-                // ============================================
+                // --------------------------------------------
 
                 let nomeUsuario =
                     "Usuário não identificado";
@@ -170,9 +157,9 @@ async function obterDadosPagina() {
                 }
 
 
-                // ============================================
+                // --------------------------------------------
                 // REPOSITÓRIO
-                // ============================================
+                // --------------------------------------------
 
                 let repositorio =
                     "Não identificado";
@@ -206,9 +193,9 @@ async function obterDadosPagina() {
                 }
 
 
-                // ============================================
+                // --------------------------------------------
                 // LOCAL STORAGE
-                // ============================================
+                // --------------------------------------------
 
                 let dadosUsuarios = {};
 
@@ -251,9 +238,9 @@ async function obterDadosPagina() {
                     };
 
 
-                // ============================================
+                // --------------------------------------------
                 // COMPATIBILIDADE
-                // ============================================
+                // --------------------------------------------
 
                 if (
                     typeof dadosUsuario.contadorAprovacao
@@ -309,74 +296,95 @@ async function obterDadosPagina() {
 
 
 // ============================================================
-// DATA E HISTÓRICO DA DATA ATUAL
+// STORAGE CENTRAL
+// ============================================================
+
+async function obterDadosStorage() {
+
+    try {
+
+        const resultado =
+            await chrome.storage.local.get(CHAVE_DADOS_USUARIOS);
+
+
+        return (resultado[CHAVE_DADOS_USUARIOS] || {});
+
+    } catch (erro) {
+
+        console.error("Erro ao acessar storage:", erro);
+
+
+        return {};
+    }
+}
+
+
+// ============================================================
+// DATA ATUAL
 // ============================================================
 
 function obterDataAtual() {
 
     const agora = new Date();
 
-    const dia =
-        String(agora.getDate())
-            .padStart(2, "0");
+    const dia = String(agora.getDate()).padStart(2, "0");
 
-    const mes =
-        String(agora.getMonth() + 1)
-            .padStart(2, "0");
+    const mes = String(agora.getMonth() + 1).padStart(2, "0");
 
-    const ano =
-        agora.getFullYear();
+    const ano = agora.getFullYear();
 
     return `${dia}/${mes}/${ano}`;
 }
 
 
-function obterHistoricoDoDia(historico) {
+// ============================================================
+// HISTÓRICO DO DIA
+// ============================================================
 
-    const dataAtual =
-        obterDataAtual();
+function obterHistoricoDoDia(dadosUsuario) {
 
-    return (
-        Array.isArray(historico)
-            ? historico
-            : []
-    ).filter(registro => {
+    const dataAtual = obterDataAtual();
 
-        return (
-            typeof registro.dataHora === "string" &&
-            registro.dataHora.startsWith(
-                dataAtual
-            )
-        );
-    });
+    const historico =
+        Array.isArray(dadosUsuario.historico)
+            ? dadosUsuario.historico : [];
+
+
+    return historico.filter(
+        registro => {
+
+            return (
+
+                typeof registro.dataHora === "string" &&
+
+                registro.dataHora.startsWith(dataAtual)
+
+            );
+        }
+    );
 }
 
 
-function obterContadoresDoDia(historico) {
+// ============================================================
+// CONTADORES DO DIA
+// ============================================================
 
-    const historicoDoDia =
-        obterHistoricoDoDia(historico);
+function obterContadoresDoDia(dadosUsuario) {
+
+    const historicoDoDia = obterHistoricoDoDia(dadosUsuario);
 
     let contadorAprovacao = 0;
 
     let contadorVerificar = 0;
 
 
-    for (
-        const registro of historicoDoDia
-    ) {
+    for (const registro of historicoDoDia) {
 
-        if (
-            registro.status ===
-            "Aprovação"
-        ) {
+        if (registro.status === "Aprovação") {
 
             contadorAprovacao++;
 
-        } else if (
-            registro.status ===
-            "Verificar"
-        ) {
+        } else if (registro.status === "Verificar") {
 
             contadorVerificar++;
         }
@@ -389,26 +397,24 @@ function obterContadoresDoDia(historico) {
 
         contadorVerificar,
 
-        contadorTotal:
-            contadorAprovacao +
-            contadorVerificar
+        contadorTotal: contadorAprovacao + contadorVerificar
     };
 }
 
 
+// ============================================================
+// HORA
+// ============================================================
+
 function obterHora(dataHora) {
 
-    if (
-        typeof dataHora !== "string" ||
-        dataHora.length < 8
-    ) {
+    if (typeof dataHora !== "string") {
 
         return "-";
     }
 
 
-    const partes =
-        dataHora.trim().split(" ");
+    const partes = dataHora.trim().split(" ");
 
 
     if (partes.length >= 2) {
@@ -429,98 +435,88 @@ async function atualizarPopup() {
 
     try {
 
-        const dados =
-            await obterDadosPagina();
+        const dados = await obterDadosPagina();
 
 
-        const dadosUsuario =
-            dados.dadosUsuario;
+        const dadosUsuarios = await obterDadosStorage();
 
 
-        // ================================================
-        // CONTADORES DO DIA
-        // ================================================
-
-        const historicoCompleto =
-            dadosUsuario.historico || [];
+        const chaveUsuario = obterChaveUsuario(dados.nomeUsuario);
 
 
-        const contadoresDoDia =
-            obterContadoresDoDia(
-                historicoCompleto
-            );
+        const dadosUsuario = dadosUsuarios[chaveUsuario] || {
+
+                contadorAprovacao: 0,
+
+                contadorVerificar: 0,
+
+                historico: []
+
+            };
 
 
-        const contadorAprovacao =
-            contadoresDoDia.contadorAprovacao;
+        const dataAtual = obterDataAtual();
 
 
-        const contadorVerificar =
-            contadoresDoDia.contadorVerificar;
+        const contadores = obterContadoresDoDia(dadosUsuario);
 
 
-        const contadorTotal =
-            contadoresDoDia.contadorTotal;
-
-
-        const dataAtual =
-            obterDataAtual();
-
+        // ----------------------------------------------------
+        // CONTADORES
+        // ----------------------------------------------------
 
         contadorElemento.textContent =
-            contadorTotal;
+            contadores.contadorTotal;
 
 
         contadorAprovacaoElemento.textContent =
-            contadorAprovacao;
+            contadores.contadorAprovacao;
 
 
         contadorVerificarElemento.textContent =
-            contadorVerificar;
+            contadores.contadorVerificar;
 
 
-        // ================================================
+        // ------------------------------------------------
         // USUÁRIO
-        // ================================================
+        // ------------------------------------------------
 
         usuarioElemento.textContent =
             dados.nomeUsuario;
 
 
-        // ================================================
+        // ------------------------------------------------
         // REPOSITÓRIO
-        // ================================================
+        // ------------------------------------------------
 
         repositorioElemento.textContent =
             dados.repositorio;
 
 
-        // ================================================
+        // ------------------------------------------------
         // DATA ATUAL
-        // ================================================
+        // ------------------------------------------------
 
         dataAtualElemento.textContent =
             dataAtual;
 
 
-        // ================================================
+        // ------------------------------------------------
         // HISTÓRICO
-        // ================================================
+        // ------------------------------------------------
 
         historicoElemento.innerHTML = "";
 
 
-        const historico =
-            [
-                ...obterHistoricoDoDia(
-                    historicoCompleto
-                )
-            ]
-                .reverse()
-                .slice(0, 5);
+        const historicoDoDia =
+            obterHistoricoDoDia(dadosUsuario);
 
 
-        if (!historico.length) {
+        const historicoExibido =
+            [...historicoDoDia].reverse().slice(0, 5);
+
+
+        if (!historicoExibido.length) {
 
             historicoElemento.innerHTML = `
                 <tr>
@@ -537,114 +533,87 @@ async function atualizarPopup() {
         }
 
 
-        for (const registro of historico) {
+        for (const registro of historicoExibido) {
 
-            const linha =
-                document.createElement("tr");
+            const linha = document.createElement("tr");
 
 
-            // ============================================
+            // --------------------------------------------
             // STATUS
-            // ============================================
+            // --------------------------------------------
 
-            const celulaStatus =
-                document.createElement("td");
-
-
-            celulaStatus.textContent =
-                registro.status || "-";
+            const celulaStatus = document.createElement("td");
 
 
-            if (
-                registro.status === "Aprovação"
-            ) {
+            celulaStatus.textContent = registro.status || "-";
 
-                celulaStatus.classList.add(
-                    "status-aprovacao"
-                );
 
-            } else if (
-                registro.status === "Verificar"
-            ) {
+            if (registro.status === "Aprovação") {
 
-                celulaStatus.classList.add(
-                    "status-verificar"
-                );
+                celulaStatus.classList.add("status-aprovacao");
+
+            } else if (registro.status === "Verificar") {
+
+                celulaStatus.classList.add("status-verificar");
             }
 
 
-            // ============================================
+            // --------------------------------------------
             // REPOSITÓRIO
-            // ============================================
+            // --------------------------------------------
 
             const celulaRepositorio =
                 document.createElement("td");
 
 
             celulaRepositorio.textContent =
-                registro.repositorioArquivistico ||
-                "-";
+                registro.repositorioArquivistico || "-";
 
 
-            // ============================================
+            // --------------------------------------------
             // IDENTIFICADOR
-            // ============================================
+            // --------------------------------------------
 
             const celulaIdentificador =
                 document.createElement("td");
 
 
             celulaIdentificador.textContent =
-                registro.identificadorUnico ||
-                "-";
+                registro.identificadorUnico || "-";
 
 
-            // ============================================
-            // DATA/HORA
-            // ============================================
+            // --------------------------------------------
+            // HORA
+            // --------------------------------------------
 
             const celulaData =
                 document.createElement("td");
 
 
             celulaData.textContent =
-                registro.dataHora ||
-                "-";
+                obterHora(registro.dataHora);
 
 
-            // ============================================
+            // --------------------------------------------
             // MONTAR LINHA
-            // ============================================
+            // --------------------------------------------
 
-            linha.appendChild(
-                celulaStatus
-            );
+            linha.appendChild(celulaStatus);
 
-            linha.appendChild(
-                celulaRepositorio
-            );
+            linha.appendChild(celulaRepositorio);
 
-            linha.appendChild(
-                celulaIdentificador
-            );
+            linha.appendChild(celulaIdentificador);
 
-            linha.appendChild(
-                celulaData
-            );
+            linha.appendChild(celulaData);
 
 
-            historicoElemento.appendChild(
-                linha
-            );
+            historicoElemento.appendChild(linha);
         }
 
 
     } catch (erro) {
 
-        console.error(
-            "Erro ao atualizar popup:",
-            erro
-        );
+        console.error("Erro ao atualizar popup:", erro);
 
 
         contadorElemento.textContent = "0";
@@ -654,12 +623,10 @@ async function atualizarPopup() {
         contadorVerificarElemento.textContent = "0";
 
 
-        usuarioElemento.textContent =
-            "Não disponível";
+        usuarioElemento.textContent = "Não disponível";
 
 
-        repositorioElemento.textContent =
-            "Não disponível";
+        repositorioElemento.textContent = "Não disponível";
 
 
         historicoElemento.innerHTML = `
@@ -677,233 +644,13 @@ async function atualizarPopup() {
 
 
 // ============================================================
-// ZERAR CONTADOR E HISTÓRICO
-// ============================================================
-
-async function zerarDados() {
-
-    try {
-
-        const abas =
-            await chrome.tabs.query({
-                active: true,
-                currentWindow: true
-            });
-
-
-        if (!abas || !abas.length) {
-
-            throw new Error(
-                "Aba ativa não encontrada."
-            );
-        }
-
-
-        const aba = abas[0];
-
-
-        const ambientesSuportados = [
-            "https://preserve.cedae.com.br/",
-            "http://preserve.faetec.rj.gov.br/",
-            "https://preserve.faetec.rj.gov.br/"
-        ];
-
-
-        const ambienteSuportado =
-            !!aba.url &&
-            ambientesSuportados.some(
-                urlBase => aba.url.startsWith(urlBase)
-            );
-
-
-        if (!ambienteSuportado) {
-
-            throw new Error(
-                "Abra o PreserveHub para zerar os dados."
-            );
-        }
-
-
-        await chrome.scripting.executeScript({
-
-            target: {
-                tabId: aba.id
-            },
-
-            func: () => {
-
-                function normalizarTexto(texto) {
-
-                    return (texto || "")
-                        .normalize("NFD")
-                        .replace(/[\u0300-\u036f]/g, "")
-                        .replace(/\s+/g, " ")
-                        .trim();
-                }
-
-
-                function obterChaveUsuario(nomeUsuario) {
-
-                    return normalizarTexto(
-                        nomeUsuario
-                    ).toUpperCase();
-                }
-
-
-                // ============================================
-                // LOCALIZAR USUÁRIO
-                // ============================================
-
-                let nomeUsuario =
-                    "Usuário não identificado";
-
-
-                const elementos =
-                    document.querySelectorAll(
-                        "p.mud-typography.mud-typography-body2"
-                    );
-
-
-                for (const elemento of elementos) {
-
-                    const estilo =
-                        elemento.getAttribute("style") || "";
-
-
-                    if (
-                        estilo
-                            .toLowerCase()
-                            .includes("color:white")
-                    ) {
-
-                        const nome =
-                            elemento.textContent.trim();
-
-
-                        if (nome) {
-
-                            nomeUsuario = nome;
-
-                            break;
-                        }
-                    }
-                }
-
-
-                const chaveUsuario =
-                    obterChaveUsuario(
-                        nomeUsuario
-                    );
-
-
-                // ============================================
-                // LER DADOS
-                // ============================================
-
-                let dadosUsuarios = {};
-
-
-                try {
-
-                    const dadosSalvos =
-                        localStorage.getItem(
-                            "dadosContadorPorUsuario"
-                        );
-
-
-                    if (dadosSalvos) {
-
-                        dadosUsuarios =
-                            JSON.parse(dadosSalvos);
-                    }
-
-                } catch (erro) {
-
-                    console.error(
-                        "Erro ao ler dados:",
-                        erro
-                    );
-                }
-
-
-                // ============================================
-                // ZERAR SOMENTE O USUÁRIO ATUAL
-                // ============================================
-
-                dadosUsuarios[chaveUsuario] = {
-
-                    contadorAprovacao: 0,
-
-                    contadorVerificar: 0,
-
-                    historico: []
-                };
-
-
-                // ============================================
-                // SALVAR
-                // ============================================
-
-                localStorage.setItem(
-
-                    "dadosContadorPorUsuario",
-
-                    JSON.stringify(dadosUsuarios)
-                );
-            }
-
-        });
-
-
-        await atualizarPopup();
-
-
-    } catch (erro) {
-
-        console.error(
-            "Erro ao zerar dados:",
-            erro
-        );
-
-        alert(
-            erro.message ||
-            "Não foi possível zerar os dados."
-        );
-    }
-}
-
-
-// ============================================================
-// EVENTO DO BOTÃO
-// ============================================================
-
-botaoZerar.addEventListener(
-    "click",
-    async () => {
-
-        const confirmar =
-            confirm(
-                "Deseja realmente zerar o contador e o histórico deste usuário?"
-            );
-
-
-        if (!confirmar) {
-            return;
-        }
-
-
-        await zerarDados();
-    }
-);
-
-
-// ============================================================
 // EXPORTAR HISTÓRICO PARA CSV
 // ============================================================
 
 function escaparCampoCSV(valor) {
 
     if (valor === null || valor === undefined) {
+
         return "";
     }
 
@@ -937,20 +684,16 @@ function gerarCSV(historico) {
     const linhas = [];
 
 
-    // ================================================
+    // ------------------------------------------------
     // CABEÇALHO
-    // ================================================
+    // ------------------------------------------------
 
-    linhas.push(
-        cabecalho
-            .map(escaparCampoCSV)
-            .join(";")
-    );
+    linhas.push(cabecalho.map(escaparCampoCSV).join(";"));
 
 
-    // ================================================
+    // ------------------------------------------------
     // DADOS
-    // ================================================
+    // ------------------------------------------------
 
     for (const registro of historico) {
 
@@ -969,11 +712,7 @@ function gerarCSV(historico) {
         ];
 
 
-        linhas.push(
-            linha
-                .map(escaparCampoCSV)
-                .join(";")
-        );
+        linhas.push(linha.map(escaparCampoCSV).join(";"));
     }
 
 
@@ -996,8 +735,7 @@ async function exportarCSV() {
 
     try {
 
-        const dados =
-            await obterDadosPagina();
+        const dados = await obterDadosPagina();
 
 
         // IMPORTANTE:
@@ -1007,15 +745,23 @@ async function exportarCSV() {
         // os registros do dia, o CSV continua contendo
         // todo o histórico armazenado.
 
-        const historico = dados?.dadosUsuario?.historico;
-        
-
-        if (!Array.isArray(historico)) {
-            throw new Error("Histórico inválido para exportação.");
-        }
+        const dadosUsuarios = await obterDadosStorage();
 
 
-        if (!historico.length) {
+        const chaveUsuario =
+            obterChaveUsuario(dados.nomeUsuario);
+
+
+        const dadosUsuario = dadosUsuarios[chaveUsuario];
+
+
+        if (
+            !dadosUsuario ||
+            !Array.isArray(
+                dadosUsuario.historico
+            ) ||
+            !dadosUsuario.historico.length
+        ) {
 
             alert(
                 "Não existem registros no histórico para exportar."
@@ -1029,8 +775,7 @@ async function exportarCSV() {
         // GERA CSV
         // ----------------------------------------------------
 
-        const conteudoCSV =
-            gerarCSV(historico);
+        const conteudoCSV = gerarCSV(dadosUsuario.historico);
 
 
         // ----------------------------------------------------
@@ -1046,8 +791,7 @@ async function exportarCSV() {
             );
 
 
-        const url =
-            URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
 
 
         // ----------------------------------------------------
@@ -1062,8 +806,7 @@ async function exportarCSV() {
             .replace(/[^a-zA-Z0-9_-]/g, "");
 
 
-        const dataAtual =
-            new Date();
+        const dataAtual = new Date();
 
 
         const ano =
@@ -1071,15 +814,11 @@ async function exportarCSV() {
 
 
         const mes =
-            String(
-                dataAtual.getMonth() + 1
-            ).padStart(2, "0");
+            String(dataAtual.getMonth() + 1).padStart(2, "0");
 
 
         const dia =
-            String(
-                dataAtual.getDate()
-            ).padStart(2, "0");
+            String(dataAtual.getDate()).padStart(2, "0");
 
 
         const nomeArquivo =
@@ -1090,8 +829,7 @@ async function exportarCSV() {
         // DOWNLOAD
         // ----------------------------------------------------
 
-        const link =
-            document.createElement("a");
+        const link = document.createElement("a");
 
 
         link.href = url;
@@ -1118,15 +856,10 @@ async function exportarCSV() {
 
     } catch (erro) {
 
-        console.error(
-            "Erro ao exportar CSV:",
-            erro
-        );
+        console.error("Erro ao exportar CSV:", erro);
 
 
-        alert(
-            "Não foi possível exportar o relatório CSV."
-        );
+        alert("Não foi possível exportar o relatório CSV.");
     }
 }
 
@@ -1149,9 +882,14 @@ botaoExportarCSV.addEventListener(
 // INICIALIZAÇÃO
 // ============================================================
 
-atualizarPopup();
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        atualizarPopup();
 
 
-console.log(
-    `Popup v${VERSAO} carregado.`
+        console.log(`Popup v${VERSAO} carregado.`);
+
+    }
 );

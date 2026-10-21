@@ -16,13 +16,24 @@ CRIADO POR DERIK PIMENTEL
 
   <style>
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       width: 600px;
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
       background: #f5f5f5;
+      color: #222;
     }
+
+    /*
+    =====================================================
+    CABEÇALHO
+    =====================================================
+    */
 
     .cabecalho {
       display: flex;
@@ -43,95 +54,150 @@ CRIADO POR DERIK PIMENTEL
       text-align: center;
     }
 
-    .contador-principal {
+
+    /*
+    =====================================================
+    PAINEL PRINCIPAL
+    =====================================================
+    */
+
+    .painel-principal {
+      display: flex;
+      align-items: stretch;
+      gap: 20px;
       background: white;
       border-radius: 10px;
-      padding: 15px;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      padding: 18px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       margin-bottom: 15px;
     }
 
-    .contador-total {
-      font-size: 42px;
-      font-weight: bold;
-    }
 
-    .contador-label {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 15px;
-    }
+    /*
+    =====================================================
+    INFORMAÇÕES
+    =====================================================
+    */
 
-    .contadores-status {
+    .informacoes-principais {
+      flex: 1;
       display: flex;
-      justify-content: space-around;
-      border-top: 1px solid #ddd;
-      padding-top: 12px;
-    }
-
-    .status-box {
-      text-align: center;
-    }
-
-    .status-valor {
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    .status-label {
-      font-size: 12px;
-      color: #666;
-    }
-
-    .botoes-acoes {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
-    }
-
-    .botoes-acoes button {
-        flex: 1;
-        padding: 10px;
-        border: none;
-        border-radius: 6px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    #zerar {
-      background: #c62828;
-    }
-
-    #zerar:hover {
-      background: #a91f1f;
-    }
-
-    #exportar-csv {
-        background: #2e7d32;
-    }
-
-    #exportar-csv:hover {
-        background: #1b5e20;
-    }
-
-    .informacoes {
-      background: white;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 15px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
     }
 
     .informacao {
-      margin-bottom: 6px;
+      margin-bottom: 10px;
       font-size: 13px;
+      line-height: 1.4;
     }
 
     .informacao:last-child {
       margin-bottom: 0;
     }
+
+    .informacao strong {
+      display: inline-block;
+      min-width: 125px;
+    }
+
+    .informacao span {
+      word-break: break-word;
+    }
+
+
+    /*
+    =====================================================
+    CONTADOR
+    =====================================================
+    */
+
+    .contador-principal {
+      flex: 0 0 245px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-left: 1px solid #ddd;
+      padding-left: 20px;
+    }
+
+    .contador-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .contador-total {
+      font-size: 42px;
+      font-weight: bold;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .contadores-status {
+      display: flex;
+      justify-content: center;
+      gap: 35px;
+      width: 100%;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      margin-top: 5px;
+    }
+
+    .status-box {
+      text-align: center;
+      min-width: 65px;
+    }
+
+    .status-valor {
+      font-size: 22px;
+      font-weight: bold;
+      line-height: 1.1;
+    }
+
+    .status-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 3px;
+    }
+
+
+    /*
+    =====================================================
+    BOTÃO EXPORTAR
+    =====================================================
+    */
+
+    .botoes-acoes {
+      margin-bottom: 15px;
+    }
+
+    #exportar-csv {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 6px;
+      background: #2e7d32;
+      color: white;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    #exportar-csv:hover {
+      background: #1b5e20;
+    }
+
+
+    /*
+    =====================================================
+    HISTÓRICO
+    =====================================================
+    */
 
     .titulo-historico {
       font-size: 18px;
@@ -144,7 +210,7 @@ CRIADO POR DERIK PIMENTEL
       border-radius: 8px;
       overflow: auto;
       max-height: 350px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
     }
 
     table {
@@ -160,6 +226,7 @@ CRIADO POR DERIK PIMENTEL
       padding: 9px 6px;
       text-align: left;
       border-bottom: 1px solid #ccc;
+      white-space: nowrap;
     }
 
     td {
@@ -172,6 +239,13 @@ CRIADO POR DERIK PIMENTEL
       border-bottom: none;
     }
 
+
+    /*
+    =====================================================
+    STATUS
+    =====================================================
+    */
+
     .status-aprovacao {
       font-weight: bold;
     }
@@ -179,6 +253,13 @@ CRIADO POR DERIK PIMENTEL
     .status-verificar {
       font-weight: bold;
     }
+
+
+    /*
+    =====================================================
+    SEM HISTÓRICO
+    =====================================================
+    */
 
     .sem-historico {
       text-align: center;
@@ -192,6 +273,12 @@ CRIADO POR DERIK PIMENTEL
 
 <body>
 
+    <!--
+    =====================================================
+    CABEÇALHO
+    =====================================================
+    -->
+
     <div class="cabecalho">
         <img
             src="Logo_SAFE.png"
@@ -204,53 +291,97 @@ CRIADO POR DERIK PIMENTEL
 
     <!--
     =====================================================
-    CONTADOR
+    PAINEL PRINCIPAL
     =====================================================
     -->
 
-    <div class="contador-principal">
+    <div class="painel-principal">
 
-        <div
-            id="contador"
-            class="contador-total"
-        >
-            0
+
+        <!--
+        =================================================
+        INFORMAÇÕES DO USUÁRIO
+        =================================================
+        -->
+
+        <div class="informacoes-principais">
+
+            <div class="informacao">
+                <strong>Usuário logado:</strong>
+                <span id="usuario-logado">
+                    -
+                </span>
+            </div>
+
+            <div class="informacao">
+                <strong>Repositório atual:</strong>
+                <span id="repositorio-atual">
+                    -
+                </span>
+            </div>
+
+            <div class="informacao">
+                <strong>Data:</strong>
+                <span id="data-atual">
+                    -
+                </span>
+            </div>
+
         </div>
 
-        <div class="contador-label">
-            TOTAL DO DIA
-        </div>
 
+        <!--
+        =================================================
+        CONTADORES
+        =================================================
+        -->
 
-        <div class="contadores-status">
+        <div class="contador-principal">
 
-            <div class="status-box">
+            <div
+                id="contador"
+                class="contador-total"
+            >
+                0
+            </div>
 
-                <div
-                    id="contador-aprovacao"
-                    class="status-valor"
-                >
-                    0
-                </div>
-
-                <div class="status-label">
-                    Aprovação
-                </div>
-
+            <div class="contador-label">
+                TOTAL DO DIA
             </div>
 
 
-            <div class="status-box">
+            <div class="contadores-status">
 
-                <div
-                    id="contador-verificar"
-                    class="status-valor"
-                >
-                    0
+
+                <div class="status-box">
+
+                    <div
+                        id="contador-aprovacao"
+                        class="status-valor"
+                    >
+                        0
+                    </div>
+
+                    <div class="status-label">
+                        Aprovação
+                    </div>
+
                 </div>
 
-                <div class="status-label">
-                    Verificar
+
+                <div class="status-box">
+
+                    <div
+                        id="contador-verificar"
+                        class="status-valor"
+                    >
+                        0
+                    </div>
+
+                    <div class="status-label">
+                        Verificar
+                    </div>
+
                 </div>
 
             </div>
@@ -262,51 +393,15 @@ CRIADO POR DERIK PIMENTEL
 
     <!--
     =====================================================
-    BOTÕES
+    BOTÃO EXPORTAR
     =====================================================
     -->
 
     <div class="botoes-acoes">
 
-        <button id="zerar" style="visibility: hidden;" disabled>
-            Zerar contador e histórico
-        </button>
-
         <button id="exportar-csv">
             Exportar CSV
         </button>
-
-    </div>
-
-
-    <!--
-    =====================================================
-    INFORMAÇÕES
-    =====================================================
-    -->
-
-    <div class="informacoes">
-
-        <div class="informacao">
-            <strong>Usuário logado:</strong>
-            <span id="usuario-logado">
-                -
-            </span>
-        </div>
-
-        <div class="informacao">
-            <strong>Repositório atual:</strong>
-            <span id="repositorio-atual">
-                -
-            </span>
-        </div>
-
-        <div class="informacao">
-            <strong>Data:</strong>
-            <span id="data-atual">
-                -
-            </span>
-        </div>
 
     </div>
 
@@ -336,7 +431,7 @@ CRIADO POR DERIK PIMENTEL
 
                     <th>Identificador Único</th>
 
-                    <th>Data/Hora</th>
+                    <th>Hora</th>
 
                 </tr>
 
