@@ -193,90 +193,12 @@ async function obterDadosPagina() {
                 }
 
 
-                // --------------------------------------------
-                // LOCAL STORAGE
-                // --------------------------------------------
-
-                let dadosUsuarios = {};
-
-
-                try {
-
-                    const dadosSalvos =
-                        localStorage.getItem(
-                            "dadosContadorPorUsuario"
-                        );
-
-
-                    if (dadosSalvos) {
-
-                        dadosUsuarios =
-                            JSON.parse(dadosSalvos);
-                    }
-
-                } catch (erro) {
-
-                    console.error(
-                        "Erro ao ler localStorage:",
-                        erro
-                    );
-                }
-
-
-                const chaveUsuario =
-                    obterChaveUsuario(nomeUsuario);
-
-
-                const dadosUsuario =
-                    dadosUsuarios[chaveUsuario] || {
-
-                        contadorAprovacao: 0,
-
-                        contadorVerificar: 0,
-
-                        historico: []
-                    };
-
-
-                // --------------------------------------------
-                // COMPATIBILIDADE
-                // --------------------------------------------
-
-                if (
-                    typeof dadosUsuario.contadorAprovacao
-                    !== "number"
-                ) {
-
-                    dadosUsuario.contadorAprovacao = 0;
-                }
-
-
-                if (
-                    typeof dadosUsuario.contadorVerificar
-                    !== "number"
-                ) {
-
-                    dadosUsuario.contadorVerificar = 0;
-                }
-
-
-                if (
-                    !Array.isArray(
-                        dadosUsuario.historico
-                    )
-                ) {
-
-                    dadosUsuario.historico = [];
-                }
-
-
                 return {
 
                     nomeUsuario,
 
-                    repositorio,
+                    repositorio
 
-                    dadosUsuario
                 };
             }
 
@@ -299,24 +221,42 @@ async function obterDadosPagina() {
 // STORAGE CENTRAL
 // ============================================================
 
+
 async function obterDadosStorage() {
 
     try {
 
-        const resultado =
-            await chrome.storage.local.get(CHAVE_DADOS_USUARIOS);
+        const resultado = await chrome.storage.local.get(
+            CHAVE_DADOS_USUARIOS
+        );
+
+        const dados = resultado[CHAVE_DADOS_USUARIOS];
 
 
-        return (resultado[CHAVE_DADOS_USUARIOS] || {});
+        if (dados === undefined) {
+
+            return {};
+        }
+
+        if (
+            dados === null ||
+            typeof dados !== "object" ||
+            Array.isArray(dados)
+        ) {
+            throw new Error(
+                "O armazenamento possui uma estrutura inválida."
+            );
+        }
+
+        return dados;
 
     } catch (erro) {
 
         console.error("Erro ao acessar storage:", erro);
-
-
-        return {};
+        throw erro;
     }
 }
+
 
 
 // ============================================================
@@ -616,11 +556,11 @@ async function atualizarPopup() {
         console.error("Erro ao atualizar popup:", erro);
 
 
-        contadorElemento.textContent = "0";
+        contadorElemento.textContent = "X";
 
-        contadorAprovacaoElemento.textContent = "0";
+        contadorAprovacaoElemento.textContent = "X";
 
-        contadorVerificarElemento.textContent = "0";
+        contadorVerificarElemento.textContent = "X";
 
 
         usuarioElemento.textContent = "Não disponível";

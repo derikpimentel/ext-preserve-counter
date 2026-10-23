@@ -44,18 +44,31 @@ async function obterDadosStorage() {
 
         const dados = resultado[CHAVE_DADOS_USUARIOS];
 
-        if (dados && typeof dados === "object") {
+        // Nenhum dado salvo ainda: armazenamento vazio.
+        if (dados === undefined) {
 
-            return dados;
+            return {};
         }
 
-        return {};
+        // Impede que uma estrutura inválida seja tratada
+        // como um conjunto válido de dados.
+        if (
+            dados === null ||
+            typeof dados !== "object" ||
+            Array.isArray(dados)
+        ) {
+            throw new Error(
+                "O armazenamento possui uma estrutura inválida."
+            );
+        }
+
+        return dados;
 
     } catch (erro) {
-
         console.error("Erro ao ler storage:", erro);
 
-        return {};
+        // Não transformar uma falha de leitura em dados vazios.
+        throw erro;
     }
 }
 
@@ -441,7 +454,17 @@ async function registrarAcao(status) {
                 // Salva
                 // ----------------------------------------------------
 
-                await salvarDadosStorage(dadosUsuarios);
+                const salvou = await salvarDadosStorage(dadosUsuarios);
+
+                if (!salvou) {
+
+                    console.error("A transição não foi salva.");
+                    console.error(
+                        "O contador visual não será atualizado."
+                    );
+
+                    return;
+                }
 
 
                 // ----------------------------------------------------
@@ -527,7 +550,17 @@ async function registrarAcao(status) {
         // SALVAR
         // --------------------------------------------------------
 
-        await salvarDadosStorage(dadosUsuarios);
+        const salvou = await salvarDadosStorage(dadosUsuarios);
+
+        if (!salvou) {
+
+            console.error("O registro não foi salvo.");
+            console.error(
+                "O contador visual não será atualizado."
+            );
+
+            return;
+        }
 
 
         // --------------------------------------------------------
@@ -742,10 +775,44 @@ function obterLocalizacaoFisica() {
 
 
 // ============================================================
+// STATUS DIGITALIZADO
+// ============================================================
+
+function possuiStatusDigitalizado() {
+
+    const elementos = document.querySelectorAll(
+        "span.mud-chip-content"
+    );
+
+    for (const elemento of elementos) {
+
+        const texto = normalizarTexto(
+            elemento.textContent
+        ).toUpperCase();
+
+
+        if (texto === "DIGITALIZADO") {
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// ============================================================
 // VERIFICAR SE EXISTE "VERIFICAR"
 // ============================================================
 
 function possuiVerificar() {
+
+    // Só permite a condição "Verificar"
+    // quando o objeto estiver DIGITALIZADO.
+    if (!possuiStatusDigitalizado()) {
+
+        return false;
+    }
 
     const repositorioFisico = obterRepositorioFisico();
 
