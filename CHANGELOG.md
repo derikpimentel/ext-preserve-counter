@@ -1,76 +1,61 @@
-# Changelog
+# Changelog — SAFE-PreserveHub
 
-Este arquivo registra as mudanças relevantes do SAFE-PreserveHub ao longo do desenvolvimento. O formato é inspirado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
+Este arquivo registra as mudanças relevantes do SAFE-PreserveHub ao longo do desenvolvimento.
 
-As entradas descrevem a evolução do projeto e não significam, necessariamente, que cada funcionalidade tenha sido validada em todos os cenários.
+O formato segue uma organização inspirada no Keep a Changelog. As entradas descrevem a evolução funcional do projeto; não significam, necessariamente, que cada funcionalidade tenha sido validada em todos os cenários.
 
 ## [Em desenvolvimento]
 
 ### Adicionado
+
 - Estrutura inicial da extensão baseada no Chrome Extensions Manifest V3.
-- Popup para apresentação do contador.
-- Identificação de interações relacionadas ao envio para aprovação no PreserveHub.
-- Registro das confirmações identificadas.
-- Histórico com identificador único e data/hora.
-- Indicador flutuante temporário com o total contabilizado.
-- Interface de histórico no popup.
-- Identificação do repositório arquivístico e do usuário exibido na página.
-- Inclusão do repositório e do usuário nos registros do histórico.
-- Exibição de informações contextuais no popup e no contador flutuante.
-- Estrutura de contadores e histórico organizada por usuário.
-- Separação dos contadores por categoria: Aprovação e Verificar.
-- Exibição do total diário e dos totais por categoria.
-- Exibição do status de cada registro no histórico.
-- Exportação do histórico para CSV com status, repositório, identificador único, data/hora e nome de usuário.
-- Detecção do acionamento de salvamento de metadados para avaliar possíveis operações da categoria Verificar.
-- Análise dos campos Repositório Físico e Localização Física para auxiliar na classificação de operações.
-- Verificação do histórico por identificador único e status para ajudar a evitar duplicidades.
-- Tratamento da transição de um registro existente de Verificar para Aprovação, ainda sujeito a validação integrada.
-- Reorganização visual do popup, com painel de contadores e apresentação do histórico.
-- Inclusão da logo e atualização da identidade visual para SAFE-PreserveHub.
+- Popup para apresentação dos contadores e do histórico.
+- Identificação de interações relacionadas aos fluxos de Aprovação e Verificar no PreserveHub.
+- Histórico com identificador, status, repositório arquivístico, data/hora e nome do usuário.
+- Indicador flutuante temporário com os totais contabilizados.
+- Organização dos dados de contagem e histórico por usuário.
+- Exportação do histórico disponível para CSV.
+- Detecção do acionamento de salvamento de metadados para avaliar operações da categoria Verificar.
+- Verificação do status `DIGITALIZADO` como condição para permitir a classificação Verificar.
 
 ### Alterado
-- Ampliação das informações apresentadas no histórico.
-- Substituição da estrutura global de contador e histórico por uma estrutura organizada por usuário.
-- Reorganização da detecção de interações para tratar separadamente as ações de Aprovação e Verificar.
-- Atualização da identificação e da extração de informações da página.
-- Atualização do identificador do elemento flutuante para `janela-contador`.
-- Inclusão e reorganização de mensagens de diagnóstico para auxiliar a validação.
-- Limitação da visualização do histórico no popup aos cinco registros mais recentes, sem intenção de excluir os registros anteriores do armazenamento.
-- Ajuste dos contadores para considerar os registros associados ao dia atual.
-- Manutenção da exportação CSV baseada no histórico completo disponível.
-- Atualização dos endereços configurados para incluir os ambientes CEDAE e FAETEC, conforme o manifesto.
-- Alteração da chave de dados por usuário para `dadosContadorPorUsuario` na implementação mais recente compartilhada.
-- Início da mudança do armazenamento do `localStorage` da página para `chrome.storage.local` em `content.js`; a consistência com `popup.js` e a compatibilidade com dados anteriores precisam ser confirmadas.
 
-### Removido
-- O botão de limpeza de contador e histórico foi retirado da interface atual do popup. A limpeza não deve ser considerada disponível pela interface nesta etapa.
+- Centralização do armazenamento em `chrome.storage.local`, usando a chave `dadosContadorPorUsuario`.
+- Simplificação dos dados retornados pela consulta à página no popup; os contadores e o histórico são consultados pelo armazenamento central.
+- Validação da estrutura retornada por `chrome.storage.local`: a ausência da chave é tratada como armazenamento vazio, enquanto valores de estrutura inválida geram erro.
+- Propagação de erros de leitura do armazenamento, evitando tratá-los silenciosamente como dados vazios.
+- Verificação do resultado da gravação antes de atualizar o contador visual.
+- Exibição de `X` nos contadores do popup quando ocorre falha ao ler o armazenamento, evitando apresentar um zero que possa ser interpretado como resultado válido.
+- Manutenção da versão `1.0.0` no manifesto durante esta etapa de desenvolvimento.
+
+### Corrigido
+
+- Prevenção da atualização do contador visual quando a função de gravação informa falha, desde que `salvarDadosStorage()` retorne corretamente o indicador de sucesso ou falha.
+- Tratamento explícito de estruturas inválidas no armazenamento central.
 
 ### Em validação
-- Identificação correta do registro, do usuário e do repositório no PreserveHub.
-- Precisão dos seletores e preservação da grafia dos valores identificados.
+
+- Confirmar que `salvarDadosStorage()` retorna `true` em caso de sucesso e `false` em caso de falha.
+- Confirmar que a leitura e a gravação de `content.js` e `popup.js` utilizam a mesma chave e o mesmo mecanismo.
+- Validar o seletor de DOM usado para encontrar o status `DIGITALIZADO` nos ambientes reais do PreserveHub.
+- Identificação correta do registro, do usuário e do repositório.
 - Contagem correta das categorias Aprovação e Verificar.
 - Prevenção de duplicidades sem bloquear novas ocorrências legítimas.
+- Transição de Verificar para Aprovação sem duplicar o registro e com atualização coerente dos contadores.
 - Persistência, leitura e consistência dos contadores e do histórico.
-- Consistência entre os contadores do popup e do contador flutuante.
-- Exibição do histórico em ordem decrescente de data/hora.
-- Comportamento da contagem diária na transição de Verificar para Aprovação.
-- Transição sem duplicação e preservação dos dados históricos.
-- Tratamento de dados inválidos e de falhas na identificação dos campos.
-- Compatibilidade com dados armazenados pela implementação anterior.
-- Consistência do mecanismo e da chave de armazenamento entre `content.js` e `popup.js`.
+- Exibição do histórico em ordem decrescente de data e hora.
+- Tratamento de falhas de leitura e gravação sem apresentar dados incorretos.
+- Compatibilidade com dados armazenados em versões anteriores e eventual necessidade de migração de `localStorage`.
 - Funcionamento da exportação CSV, incluindo acentos, caracteres especiais e proteção contra fórmulas em planilhas.
-- Correspondência entre o status contabilizado e a mensagem apresentada no contador flutuante.
-- Compatibilidade do identificador do contador flutuante com os demais arquivos.
-- Funcionamento após a integração dos scripts, permissões e ícones definidos no manifesto.
 - Compatibilidade do filtro diário com os formatos de data existentes.
+- Consistência entre os contadores do popup e do contador flutuante.
 - Funcionamento integrado nos ambientes CEDAE e FAETEC.
 - Necessidade de acesso HTTP no ambiente FAETEC.
-- Ausência de erros relevantes no console durante os fluxos principais.
+- Ausência de erros relevantes no console durante os testes funcionais.
 
 ## Versão declarada no manifesto
 
-A versão declarada no `manifest.json` durante esta etapa de desenvolvimento é `1.0.0`. A atualização deste changelog não altera o número da versão.
+A versão `1.0.0` é a versão declarada no `manifest.json` durante esta etapa. A atualização da documentação não altera o número da versão.
 
 ## Convenção de registro
 
