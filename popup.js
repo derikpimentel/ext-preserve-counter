@@ -587,6 +587,39 @@ function atualizarSeletorDeDatas(historico) {
 
 
 // ============================================================
+// OBTER HISTÓRICO DE TODOS OS USUÁRIOS
+// ============================================================
+
+function obterHistoricoTodosUsuarios(dadosUsuarios) {
+
+    const historicoTodos = [];
+
+    if (!dadosUsuarios || typeof dadosUsuarios !== "object") {
+
+        return historicoTodos;
+    }
+
+    for (const chaveUsuario of Object.keys(dadosUsuarios)) {
+
+        const dadosUsuario = dadosUsuarios[chaveUsuario];
+
+        if (
+            !dadosUsuario ||
+            !Array.isArray(dadosUsuario.historico)
+        ) {
+            continue;
+        }
+
+        for (const registro of dadosUsuario.historico) {
+            historicoTodos.push(registro);
+        }
+    }
+
+    return historicoTodos;
+}
+
+
+// ============================================================
 // ATUALIZAR POPUP
 // ============================================================
 
@@ -664,9 +697,10 @@ async function atualizarPopup() {
         // SELETOR DE DATAS
         // ------------------------------------------------
 
-        atualizarSeletorDeDatas(
-            dadosUsuario.historico
-        );
+        const historicoTodosUsuarios =
+            obterHistoricoTodosUsuarios(dadosUsuarios);
+
+        atualizarSeletorDeDatas(historicoTodosUsuarios);
 
 
         // ------------------------------------------------
@@ -994,15 +1028,12 @@ function obterDataAtualParaArquivo() {
 
 
 // ============================================================
-// EXPORTAR CSV
+// EXPORTAR CSV COMPLETO
 // ============================================================
 
 async function exportarCSV() {
 
     try {
-
-        const dados = await obterDadosPagina();
-
 
         // IMPORTANTE:
         // Aqui usamos o histórico COMPLETO.
@@ -1013,25 +1044,11 @@ async function exportarCSV() {
 
         const dadosUsuarios = await obterDadosStorage();
 
+        const historicoTodosUsuarios =
+            obterHistoricoTodosUsuarios(dadosUsuarios);
 
-        const chaveUsuario =
-            obterChaveUsuario(dados.nomeUsuario);
-
-
-        const dadosUsuario = dadosUsuarios[chaveUsuario];
-
-
-        if (
-            !dadosUsuario ||
-            !Array.isArray(
-                dadosUsuario.historico
-            ) ||
-            !dadosUsuario.historico.length
-        ) {
-
-            alert(
-                "Não existem registros no histórico para exportar."
-            );
+        if (!historicoTodosUsuarios.length) {
+            alert("Não existem registros no histórico para exportar.");
 
             return;
         }
@@ -1041,18 +1058,14 @@ async function exportarCSV() {
         // GERA CSV
         // ----------------------------------------------------
 
-        const conteudoCSV = gerarCSV(dadosUsuario.historico);
-
-
-        const nomeUsuario =
-            obterNomeUsuarioParaArquivo(dados.nomeUsuario);
+        const conteudoCSV = gerarCSV(historicoTodosUsuarios);
 
 
         const dataArquivo = obterDataAtualParaArquivo();
 
 
         const nomeArquivo =
-            `Relatorio_Completo_${nomeUsuario}_${dataArquivo}.csv`;
+            `Relatorio_Auditoria_${dataArquivo}.csv`;
 
 
         baixarCSV(conteudoCSV, nomeArquivo);
@@ -1087,24 +1100,14 @@ async function exportarCSVPorDia() {
         }
 
 
-        const pagina = await obterDadosPagina();
-
-
         const dadosUsuarios = await obterDadosStorage();
 
 
-        const chaveUsuario =
-            obterChaveUsuario(pagina.nomeUsuario);
+        const historicoTodosUsuarios =
+            obterHistoricoTodosUsuarios(dadosUsuarios);
 
 
-        const dadosUsuario = dadosUsuarios[chaveUsuario];
-
-
-        if (
-            !dadosUsuario || !Array.isArray(
-                dadosUsuario.historico
-            ) || !dadosUsuario.historico.length
-        ) {
+        if (!historicoTodosUsuarios.length) {
 
             alert(
                 "Não existem registros no histórico para exportar."
@@ -1114,7 +1117,8 @@ async function exportarCSVPorDia() {
         }
 
 
-        const historicoDoDia = dadosUsuario.historico.filter(
+        const historicoDoDia =
+            historicoTodosUsuarios.filter(
                 registro => obterDataDoRegistro(
                         registro
                     ) === dataSelecionada
@@ -1134,17 +1138,12 @@ async function exportarCSVPorDia() {
         const conteudoCSV = gerarCSV(historicoDoDia);
 
 
-        const nomeUsuario = obterNomeUsuarioParaArquivo(
-                pagina.nomeUsuario
-            );
-
-
         const dataArquivo =
             dataSelecionada.split("/").reverse().join("-");
 
 
         const nomeArquivo =
-            `Relatorio_${nomeUsuario}_${dataArquivo}.csv`;
+            `Relatorio_Diario_${dataArquivo}.csv`;
 
 
         baixarCSV(conteudoCSV, nomeArquivo);

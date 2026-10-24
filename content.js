@@ -258,8 +258,7 @@ function obterDataAtual() {
 
 function obterHistoricoDoDia(dadosUsuario) {
 
-    const dataAtual =
-        obterDataAtual();
+    const dataAtual = obterDataAtual();
 
     const historico =
         Array.isArray(dadosUsuario.historico)
@@ -499,11 +498,16 @@ async function registrarAcao(status) {
             );
 
 
-        if (identificadorUnico !== "Não identificado" && registroExistente) {
+        if (
+            identificadorUnico !==
+            "Não identificado" &&
+            registroExistente
+        ) {
 
             console.log(
-                `Registro já contabilizado: ${identificadorUnico} - ${status}`
+                `Registro já contabilizado: ${identificadorUnico}`
             );
+            console.log(`Status do registro: ${status}`);
 
             return;
         }
