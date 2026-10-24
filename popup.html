@@ -65,10 +65,13 @@ CRIADO POR DERIK PIMENTEL
       display: flex;
       align-items: stretch;
       gap: 20px;
+
       background: white;
       border-radius: 10px;
       padding: 18px;
+
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
       margin-bottom: 15px;
     }
 
@@ -81,9 +84,11 @@ CRIADO POR DERIK PIMENTEL
 
     .informacoes-principais {
       flex: 1;
+
       display: flex;
       flex-direction: column;
       justify-content: center;
+
       min-width: 0;
     }
 
@@ -115,11 +120,14 @@ CRIADO POR DERIK PIMENTEL
 
     .contador-principal {
       flex: 0 0 245px;
+
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+
       text-align: center;
+
       border-left: 1px solid #ddd;
       padding-left: 20px;
     }
@@ -141,7 +149,9 @@ CRIADO POR DERIK PIMENTEL
       display: flex;
       justify-content: center;
       gap: 35px;
+
       width: 100%;
+
       border-top: 1px solid #ddd;
       padding-top: 10px;
       margin-top: 5px;
@@ -167,20 +177,42 @@ CRIADO POR DERIK PIMENTEL
 
     /*
     =====================================================
-    BOTÃO EXPORTAR
+    EXPORTAÇÃO
     =====================================================
     */
 
     .botoes-acoes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
       margin-bottom: 15px;
     }
 
-    #exportar-csv {
+    .bloco-exportacao {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12);
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .titulo-exportacao {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #333;
+      text-transform: uppercase;
+    }
+
+    .bloco-exportacao button {
       width: 100%;
-      padding: 11px;
+      padding: 10px;
       border: none;
       border-radius: 6px;
-      background: #2e7d32;
       color: white;
       font-weight: bold;
       font-size: 13px;
@@ -188,8 +220,51 @@ CRIADO POR DERIK PIMENTEL
       transition: background 0.15s ease;
     }
 
+    #exportar-csv {
+      background: #2e7d32;
+    }
+
     #exportar-csv:hover {
       background: #1b5e20;
+    }
+
+    #exportar-csv-dia {
+      background: #1565c0;
+      flex: 0 0 auto;
+      width: 115px;
+    }
+
+    #exportar-csv-dia:hover {
+      background: #0d47a1;
+    }
+
+    .linha-exportacao {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .seletor-dia {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .seletor-dia:focus {
+      outline: none;
+      border-color: #1565c0;
+    }
+
+    .texto-exportacao {
+      font-size: 11px;
+      color: #777;
+      margin-top: 8px;
+      line-height: 1.3;
     }
 
 
@@ -208,8 +283,11 @@ CRIADO POR DERIK PIMENTEL
     .tabela-container {
       background: white;
       border-radius: 8px;
+
       overflow: auto;
+
       max-height: 350px;
+
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
     }
 
@@ -222,16 +300,23 @@ CRIADO POR DERIK PIMENTEL
     th {
       position: sticky;
       top: 0;
+
       background: #eeeeee;
+
       padding: 9px 6px;
+
       text-align: left;
+
       border-bottom: 1px solid #ccc;
+
       white-space: nowrap;
     }
 
     td {
       padding: 8px 6px;
+
       border-bottom: 1px solid #eeeeee;
+
       vertical-align: middle;
     }
 
@@ -393,15 +478,67 @@ CRIADO POR DERIK PIMENTEL
 
     <!--
     =====================================================
-    BOTÃO EXPORTAR
+    EXPORTAÇÃO
     =====================================================
     -->
 
     <div class="botoes-acoes">
 
-        <button id="exportar-csv">
-            Exportar CSV
-        </button>
+
+        <!-- =================================================
+             CSV COMPLETO
+             ================================================= -->
+
+        <div class="bloco-exportacao">
+
+            <div class="titulo-exportacao">
+                Relatório completo
+            </div>
+
+            <button id="exportar-csv">
+                Exportar CSV completo
+            </button>
+
+            <div class="texto-exportacao">
+                Exporta todo o histórico disponível do usuário.
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CSV POR DIA
+             ================================================= -->
+
+        <div class="bloco-exportacao">
+
+            <div class="titulo-exportacao">
+                Relatório por dia
+            </div>
+
+            <div class="linha-exportacao">
+
+                <select
+                    id="seletor-dia"
+                    class="seletor-dia"
+                >
+                    <option value="">
+                        Nenhum dia disponível
+                    </option>
+                </select>
+
+
+                <button id="exportar-csv-dia">
+                    Exportar dia
+                </button>
+
+            </div>
+
+            <div class="texto-exportacao">
+                Selecione uma data que possua registros para gerar o relatório.
+            </div>
+
+        </div>
 
     </div>
 

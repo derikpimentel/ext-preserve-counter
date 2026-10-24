@@ -34,6 +34,12 @@ const historicoElemento =
 const botaoExportarCSV =
     document.getElementById("exportar-csv");
 
+const botaoExportarCSVPorDia =
+    document.getElementById("exportar-csv-dia");
+
+const seletorDia =
+    document.getElementById("seletor-dia");
+
 const dataAtualElemento =
     document.getElementById("data-atual");
 
@@ -64,156 +70,163 @@ function obterChaveUsuario(nomeUsuario) {
 
 async function obterDadosPagina() {
 
-    const abas = await chrome.tabs.query({
-        active: true, currentWindow: true
-    });
+    try {
+
+        const abas = await chrome.tabs.query({
+            active: true, currentWindow: true
+        });
 
 
-    if (!abas || !abas.length) {
-        throw new Error("Aba ativa não encontrada.");
-    }
+        if (!abas || !abas.length) {
+            throw new Error("Aba ativa não encontrada.");
+        }
 
 
-    const aba = abas[0];
+        const aba = abas[0];
 
 
-    const ambientesSuportados = [
-        "https://preserve.cedae.com.br/",
-        "http://preserve.faetec.rj.gov.br/",
-        "https://preserve.faetec.rj.gov.br/"
-    ];
+        const ambientesSuportados = [
+            "https://preserve.cedae.com.br/",
+            "http://preserve.faetec.rj.gov.br/",
+            "https://preserve.faetec.rj.gov.br/"
+        ];
 
 
-    const ambienteSuportado =
-        !!aba.url && ambientesSuportados.some(
-            urlBase => aba.url.startsWith(urlBase)
-        );
+        const ambienteSuportado =
+            !!aba.url && ambientesSuportados.some(
+                urlBase => aba.url.startsWith(urlBase)
+            );
 
 
-    if (!ambienteSuportado) {
+        if (!ambienteSuportado) {
 
-        throw new Error(
-            "A página atual não é o PreserveHub."
-        );
-    }
-
-
-    const resultado =
-        await chrome.scripting.executeScript({
-
-            target: {
-                tabId: aba.id
-            },
-
-            func: () => {
-
-                function normalizarTexto(texto) {
-
-                    return (texto || "")
-                        .normalize("NFD")
-                        .replace(/[\u0300-\u036f]/g, "")
-                        .replace(/\s+/g, " ")
-                        .trim();
-                }
+            throw new Error(
+                "A página atual não é o PreserveHub."
+            );
+        }
 
 
-                // --------------------------------------------
-                // USUÁRIO
-                // --------------------------------------------
+        const resultado =
+            await chrome.scripting.executeScript({
 
-                let nomeUsuario =
-                    "Usuário não identificado";
+                target: {
+                    tabId: aba.id
+                },
+
+                func: () => {
+
+                    function normalizarTexto(texto) {
+
+                        return (texto || "")
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .replace(/\s+/g, " ")
+                            .trim();
+                    }
 
 
-                const elementos =
-                    document.querySelectorAll(
-                        "p.mud-typography.mud-typography-body2"
-                    );
+                    // --------------------------------------------
+                    // USUÁRIO
+                    // --------------------------------------------
+
+                    let nomeUsuario =
+                        "Usuário não identificado";
 
 
-                for (const elemento of elementos) {
+                    const elementos =
+                        document.querySelectorAll(
+                            "p.mud-typography.mud-typography-body2"
+                        );
 
-                    const estilo =
-                        elemento.getAttribute("style") || "";
+
+                    for (const elemento of elementos) {
+
+                        const estilo =
+                            elemento.getAttribute("style") || "";
 
 
-                    if (
-                        estilo
-                            .toLowerCase()
-                            .includes("color:white")
-                    ) {
+                        if (
+                            estilo
+                                .toLowerCase()
+                                .includes("color:white")
+                        ) {
 
-                        const nome =
+                            const nome =
+                                elemento.textContent.trim();
+
+
+                            if (nome) {
+
+                                nomeUsuario = nome;
+
+                                break;
+                            }
+                        }
+                    }
+
+
+                    // --------------------------------------------
+                    // REPOSITÓRIO
+                    // --------------------------------------------
+
+                    let repositorio =
+                        "Não identificado";
+
+
+                    for (const elemento of elementos) {
+
+                        const texto =
                             elemento.textContent.trim();
 
 
-                        if (nome) {
+                        const normalizado =
+                            normalizarTexto(texto)
+                                .toUpperCase();
 
-                            nomeUsuario = nome;
+
+                        if (
+                            normalizado.startsWith(
+                                "REPOSITORIO ARQUIVISTICO"
+                            )
+                        ) {
+
+                            repositorio =
+                                texto.replace(
+                                    /^REPOSITÓRIO ARQUIVÍSTICO\s*/i,
+                                    ""
+                                ).trim();
 
                             break;
                         }
                     }
+
+
+                    return {
+
+                        nomeUsuario,
+
+                        repositorio
+
+                    };
                 }
 
-
-                // --------------------------------------------
-                // REPOSITÓRIO
-                // --------------------------------------------
-
-                let repositorio =
-                    "Não identificado";
+            });
 
 
-                for (const elemento of elementos) {
+        if (!resultado || !resultado.length) {
 
-                    const texto =
-                        elemento.textContent.trim();
-
-
-                    const normalizado =
-                        normalizarTexto(texto)
-                            .toUpperCase();
+            throw new Error(
+                "Não foi possível obter os dados da página."
+            );
+        }
 
 
-                    if (
-                        normalizado.startsWith(
-                            "REPOSITORIO ARQUIVISTICO"
-                        )
-                    ) {
+        return resultado[0].result;
 
-                        repositorio =
-                            texto.replace(
-                                /^REPOSITÓRIO ARQUIVÍSTICO\s*/i,
-                                ""
-                            ).trim();
+    } catch (erro) {
 
-                        break;
-                    }
-                }
-
-
-                return {
-
-                    nomeUsuario,
-
-                    repositorio
-
-                };
-            }
-
-        });
-
-
-    if (!resultado || !resultado.length) {
-
-        throw new Error(
-            "Não foi possível obter os dados da página."
-        );
+        throw erro;
     }
-
-
-    return resultado[0].result;
 }
 
 
@@ -368,6 +381,212 @@ function obterHora(dataHora) {
 
 
 // ============================================================
+// DATA DOS REGISTROS
+// ============================================================
+
+function obterDataDoRegistro(registro) {
+
+    if (
+        !registro || typeof registro.dataHora !== "string"
+    ) {
+
+        return null;
+    }
+
+
+    const correspondencia =
+        registro.dataHora.match(/^(\d{2}\/\d{2}\/\d{4})/);
+
+
+    if (!correspondencia) {
+
+        return null;
+    }
+
+
+    return correspondencia[1];
+}
+
+
+// ============================================================
+// CONVERTER DATA DD/MM/AAAA PARA COMPARAÇÃO
+// ============================================================
+
+function converterDataParaNumero(data) {
+
+    if (typeof data !== "string") {
+
+        return 0;
+    }
+
+
+    const partes = data.split("/");
+
+
+    if (partes.length !== 3) {
+
+        return 0;
+    }
+
+
+    const dia = Number(partes[0]);
+
+    const mes = Number(partes[1]);
+
+    const ano = Number(partes[2]);
+
+
+    if (!dia || !mes || !ano) {
+
+        return 0;
+    }
+
+
+    return (ano * 10000 + mes * 100 + dia);
+}
+
+
+// ============================================================
+// OBTER DATAS COM REGISTROS
+// ============================================================
+
+function obterDatasComRegistros(historico) {
+
+    const datas = new Set();
+
+
+    if (!Array.isArray(historico)) {
+
+        return [];
+    }
+
+
+    for (const registro of historico) {
+
+        const data = obterDataDoRegistro(registro);
+
+
+        if (data) {
+
+            datas.add(data);
+        }
+    }
+
+
+    return [...datas].sort(
+            (dataA, dataB) => {
+
+                return (
+                    converterDataParaNumero(dataB) -
+                    converterDataParaNumero(dataA)
+                );
+
+            }
+        );
+}
+
+
+// ============================================================
+// OBTER DATA PADRÃO DO RELATÓRIO
+// ============================================================
+
+function obterDataPadraoRelatorio(datas) {
+
+    if (!Array.isArray(datas) || !datas.length) {
+
+        return "";
+    }
+
+
+    const hoje = converterDataParaNumero(obterDataAtual());
+
+
+    /*
+     * Primeiro procura a data mais recente
+     * que seja anterior ao dia atual.
+     */
+
+    const dataAnterior = datas.find(
+            data => converterDataParaNumero(data) < hoje
+        );
+
+
+    if (dataAnterior) {
+
+        return dataAnterior;
+    }
+
+
+    /*
+     * Se não existir nenhuma data anterior,
+     * utiliza a data mais recente disponível.
+     */
+
+    return datas[0];
+}
+
+
+// ============================================================
+// PREENCHER SELETOR DE DATAS
+// ============================================================
+
+function atualizarSeletorDeDatas(historico) {
+
+    seletorDia.innerHTML = "";
+
+
+    const datas = obterDatasComRegistros(historico);
+
+
+    if (!datas.length) {
+
+        const opcao = document.createElement("option");
+
+        opcao.value = "";
+
+        opcao.textContent = "Nenhum dia disponível";
+
+        seletorDia.appendChild(opcao);
+
+        seletorDia.disabled = true;
+
+        botaoExportarCSVPorDia.disabled = true;
+
+        return;
+    }
+
+
+    seletorDia.disabled = false;
+
+    botaoExportarCSVPorDia.disabled = false;
+
+
+    const dataPadrao = obterDataPadraoRelatorio(datas);
+
+
+    for (const data of datas) {
+
+        const opcao = document.createElement("option");
+
+
+        opcao.value = data;
+
+
+        opcao.textContent = data;
+
+
+        if (data === dataPadrao) {
+
+            opcao.selected = true;
+        }
+
+
+        seletorDia.appendChild(opcao);
+    }
+}
+
+
+// ============================================================
 // ATUALIZAR POPUP
 // ============================================================
 
@@ -439,6 +658,15 @@ async function atualizarPopup() {
 
         dataAtualElemento.textContent =
             dataAtual;
+
+
+        // ------------------------------------------------
+        // SELETOR DE DATAS
+        // ------------------------------------------------
+
+        atualizarSeletorDeDatas(
+            dadosUsuario.historico
+        );
 
 
         // ------------------------------------------------
@@ -569,6 +797,17 @@ async function atualizarPopup() {
         repositorioElemento.textContent = "Não disponível";
 
 
+        seletorDia.innerHTML = `
+            <option value="">
+                Não disponível
+            </option>
+        `;
+
+        seletorDia.disabled = true;
+
+        botaoExportarCSVPorDia.disabled = true;
+
+
         historicoElemento.innerHTML = `
             <tr>
                 <td
@@ -609,6 +848,10 @@ function escaparCampoCSV(valor) {
     return `"${valor}"`;
 }
 
+
+// ============================================================
+// GERAR CSV
+// ============================================================
 
 function gerarCSV(historico) {
 
@@ -668,6 +911,89 @@ function gerarCSV(historico) {
 
 
 // ============================================================
+// CRIAR DOWNLOAD CSV
+// ============================================================
+
+function baixarCSV(conteudoCSV, nomeArquivo) {
+
+    const blob = new Blob([conteudoCSV],
+            {
+                type: "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const url = URL.createObjectURL(blob);
+
+
+    const link = document.createElement("a");
+
+
+    link.href = url;
+
+
+    link.download = nomeArquivo;
+
+
+    document.body.appendChild(link);
+
+
+    link.click();
+
+
+    document.body.removeChild(link);
+
+
+    setTimeout(
+        () => {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+        1000
+    );
+}
+
+
+// ============================================================
+// NOME DO USUÁRIO PARA ARQUIVO
+// ============================================================
+
+function obterNomeUsuarioParaArquivo(nomeUsuario) {
+
+    return normalizarTexto(nomeUsuario)
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
+
+// ============================================================
+// DATA ATUAL PARA NOME DO ARQUIVO
+// ============================================================
+
+function obterDataAtualParaArquivo() {
+
+    const agora = new Date();
+
+
+    const ano = agora.getFullYear();
+
+
+    const mes =
+        String(agora.getMonth() + 1).padStart(2, "0");
+
+
+    const dia =
+        String(agora.getDate()).padStart(2, "0");
+
+
+    return `${ano}-${mes}-${dia}`;
+}
+
+
+// ============================================================
 // EXPORTAR CSV
 // ============================================================
 
@@ -718,80 +1044,18 @@ async function exportarCSV() {
         const conteudoCSV = gerarCSV(dadosUsuario.historico);
 
 
-        // ----------------------------------------------------
-        // CRIA ARQUIVO
-        // ----------------------------------------------------
-
-        const blob =
-            new Blob(
-                [conteudoCSV],
-                {
-                    type: "text/csv;charset=utf-8;"
-                }
-            );
-
-
-        const url = URL.createObjectURL(blob);
-
-
-        // ----------------------------------------------------
-        // NOME DO ARQUIVO
-        // ----------------------------------------------------
-
         const nomeUsuario =
-            normalizarTexto(
-                dados.nomeUsuario
-            )
-            .replace(/\s+/g, "_")
-            .replace(/[^a-zA-Z0-9_-]/g, "");
+            obterNomeUsuarioParaArquivo(dados.nomeUsuario);
 
 
-        const dataAtual = new Date();
-
-
-        const ano =
-            dataAtual.getFullYear();
-
-
-        const mes =
-            String(dataAtual.getMonth() + 1).padStart(2, "0");
-
-
-        const dia =
-            String(dataAtual.getDate()).padStart(2, "0");
+        const dataArquivo = obterDataAtualParaArquivo();
 
 
         const nomeArquivo =
-            `Relatorio_Completo_${nomeUsuario}_${ano}-${mes}-${dia}.csv`;
+            `Relatorio_Completo_${nomeUsuario}_${dataArquivo}.csv`;
 
 
-        // ----------------------------------------------------
-        // DOWNLOAD
-        // ----------------------------------------------------
-
-        const link = document.createElement("a");
-
-
-        link.href = url;
-
-        link.download = nomeArquivo;
-
-        document.body.appendChild(link);
-
-        link.click();
-
-        document.body.removeChild(link);
-
-
-        // ================================================
-        // LIBERAR OBJETO
-        // ================================================
-
-        setTimeout(() => {
-
-            URL.revokeObjectURL(url);
-
-        }, 1000);
+        baixarCSV(conteudoCSV, nomeArquivo);
 
 
     } catch (erro) {
@@ -805,14 +1069,118 @@ async function exportarCSV() {
 
 
 // ============================================================
-// EVENTO - EXPORTAR CSV
+// EXPORTAR CSV POR DIA
 // ============================================================
 
-botaoExportarCSV.addEventListener(
-    "click",
+async function exportarCSVPorDia() {
+
+    try {
+
+        const dataSelecionada = seletorDia.value;
+
+
+        if (!dataSelecionada) {
+
+            alert("Selecione um dia para exportar.");
+
+            return;
+        }
+
+
+        const pagina = await obterDadosPagina();
+
+
+        const dadosUsuarios = await obterDadosStorage();
+
+
+        const chaveUsuario =
+            obterChaveUsuario(pagina.nomeUsuario);
+
+
+        const dadosUsuario = dadosUsuarios[chaveUsuario];
+
+
+        if (
+            !dadosUsuario || !Array.isArray(
+                dadosUsuario.historico
+            ) || !dadosUsuario.historico.length
+        ) {
+
+            alert(
+                "Não existem registros no histórico para exportar."
+            );
+
+            return;
+        }
+
+
+        const historicoDoDia = dadosUsuario.historico.filter(
+                registro => obterDataDoRegistro(
+                        registro
+                    ) === dataSelecionada
+            );
+
+
+        if (!historicoDoDia.length) {
+
+            alert(
+                `Não existem registros para o dia ${dataSelecionada}.`
+            );
+
+            return;
+        }
+
+
+        const conteudoCSV = gerarCSV(historicoDoDia);
+
+
+        const nomeUsuario = obterNomeUsuarioParaArquivo(
+                pagina.nomeUsuario
+            );
+
+
+        const dataArquivo =
+            dataSelecionada.split("/").reverse().join("-");
+
+
+        const nomeArquivo =
+            `Relatorio_${nomeUsuario}_${dataArquivo}.csv`;
+
+
+        baixarCSV(conteudoCSV, nomeArquivo);
+
+
+    } catch (erro) {
+
+        console.error("Erro ao exportar relatório diário:", erro);
+
+
+        alert("Não foi possível exportar o relatório do dia.");
+    }
+}
+
+
+// ============================================================
+// EVENTO CSV COMPLETO
+// ============================================================
+
+botaoExportarCSV.addEventListener("click",
     async () => {
 
         await exportarCSV();
+
+    }
+);
+
+
+// ============================================================
+// EVENTO CSV POR DIA
+// ============================================================
+
+botaoExportarCSVPorDia.addEventListener("click",
+    async () => {
+
+        await exportarCSVPorDia();
 
     }
 );

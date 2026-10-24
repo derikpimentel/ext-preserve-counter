@@ -356,8 +356,6 @@ async function registrarAcao(status) {
 
         const dadosUsuarios = await obterDadosStorage();
 
-        // CORREÇÃO:
-        // A função existente no código é obterUsuarioLogado()
         const usuarioAtual = obterUsuarioLogado();
 
         if (
@@ -372,7 +370,7 @@ async function registrarAcao(status) {
         const chaveUsuario = obterChaveUsuario(usuarioAtual);
 
         const dadosUsuario =
-            obterDadosUsuario( dadosUsuarios, chaveUsuario);
+            obterDadosUsuario(dadosUsuarios, chaveUsuario);
 
         const identificadorUnico = obterIdentificadorUnico();
 
@@ -582,16 +580,6 @@ async function registrarAcao(status) {
 
         console.error("Erro ao registrar ação:", erro);
     }
-}
-
-
-// ============================================================
-// CONTADOR TOTAL
-// ============================================================
-
-function obterContadorTotal(dadosUsuario) {
-
-    return obterContadoresDoDia(dadosUsuario).contadorTotal;
 }
 
 
@@ -871,7 +859,8 @@ document.addEventListener("click", function (evento) {
     // Primeiro tenta o texto do botão
     // ----------------------------------------------------
 
-    let textoBotao = normalizarTexto(botao.textContent).toUpperCase();
+    let textoBotao =
+        normalizarTexto(botao.textContent).toUpperCase();
 
 
     // ----------------------------------------------------
