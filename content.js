@@ -500,7 +500,7 @@ async function registrarAcao(status) {
 
         if (
             identificadorUnico !==
-            "Não identificado" &&
+                "Não identificado" &&
             registroExistente
         ) {
 

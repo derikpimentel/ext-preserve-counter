@@ -88,7 +88,19 @@ async function obterDadosPagina() {
         const ambientesSuportados = [
             "https://preserve.cedae.com.br/",
             "http://preserve.faetec.rj.gov.br/",
-            "https://preserve.faetec.rj.gov.br/"
+            "https://preserve.faetec.rj.gov.br/",
+
+            // Links acessados por ambiente interno com VPN
+            "http://preserve.proderj.rj.gov.br/",
+            "http://preserve.detro.rj.gov.br/",
+            "http://preserve.casacivil.rj.gov.br/",
+            "http://preserve.sedsdh.rj.gov.br/",
+            "http://preserve.procon.rj.gov.br/",
+            "http://preserve/", //  Agenersa
+            "http://preserve.degase.rj.gov.br.local/",
+
+            "http://monaco-preserve.safeconversaodigital.com.br/",
+            "https://monaco-preserve.safeconversaodigital.com.br/"
         ];
 
 
@@ -655,6 +667,8 @@ async function atualizarPopup() {
 
         // ----------------------------------------------------
         // CONTADORES
+        //
+        // CONTINUAM SENDO INDIVIDUAIS POR USUÁRIO.
         // ----------------------------------------------------
 
         contadorElemento.textContent =
@@ -695,6 +709,8 @@ async function atualizarPopup() {
 
         // ------------------------------------------------
         // SELETOR DE DATAS
+        //
+        // RELATÓRIOS CONSIDERAM TODOS OS USUÁRIOS.
         // ------------------------------------------------
 
         const historicoTodosUsuarios =
@@ -705,6 +721,8 @@ async function atualizarPopup() {
 
         // ------------------------------------------------
         // HISTÓRICO
+        //
+        // CONTINUA SENDO DO USUÁRIO ATUAL.
         // ------------------------------------------------
 
         historicoElemento.innerHTML = "";
@@ -1029,6 +1047,8 @@ function obterDataAtualParaArquivo() {
 
 // ============================================================
 // EXPORTAR CSV COMPLETO
+//
+// TODOS OS USUÁRIOS.
 // ============================================================
 
 async function exportarCSV() {
@@ -1083,6 +1103,8 @@ async function exportarCSV() {
 
 // ============================================================
 // EXPORTAR CSV POR DIA
+//
+// TODOS OS USUÁRIOS.
 // ============================================================
 
 async function exportarCSVPorDia() {

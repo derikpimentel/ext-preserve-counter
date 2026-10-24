@@ -19,7 +19,16 @@
   "host_permissions": [
     "https://preserve.cedae.com.br/*",
     "http://preserve.faetec.rj.gov.br/*",
-    "https://preserve.faetec.rj.gov.br/*"
+    "https://preserve.faetec.rj.gov.br/*",
+    "http://preserve.proderj.rj.gov.br/*",
+    "http://preserve.detro.rj.gov.br/*",
+    "http://preserve.casacivil.rj.gov.br/*",
+    "http://preserve.sedsdh.rj.gov.br/*",
+    "http://preserve.procon.rj.gov.br/*",
+    "http://preserve/*",
+    "http://preserve.degase.rj.gov.br.local/*",
+    "http://monaco-preserve.safeconversaodigital.com.br/*",
+    "https://monaco-preserve.safeconversaodigital.com.br/*"
   ],
 
   "content_scripts": [
@@ -27,7 +36,16 @@
       "matches": [
         "https://preserve.cedae.com.br/*",
         "http://preserve.faetec.rj.gov.br/*",
-        "https://preserve.faetec.rj.gov.br/*"
+        "https://preserve.faetec.rj.gov.br/*",
+        "http://preserve.proderj.rj.gov.br/*",
+        "http://preserve.detro.rj.gov.br/*",
+        "http://preserve.casacivil.rj.gov.br/*",
+        "http://preserve.sedsdh.rj.gov.br/*",
+        "http://preserve.procon.rj.gov.br/*",
+        "http://preserve/*",
+        "http://preserve.degase.rj.gov.br.local/*",
+        "http://monaco-preserve.safeconversaodigital.com.br/*",
+        "https://monaco-preserve.safeconversaodigital.com.br/*"
       ],
       "js": [
         "content.js"
