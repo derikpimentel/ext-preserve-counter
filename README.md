@@ -1,193 +1,174 @@
 # SAFE-PreserveHub
 
-Extensão de navegador desenvolvida para auxiliar na contagem e no acompanhamento de confirmações de envio para aprovação e de processos a verificar no PreserveHub.
+Extensão de navegador baseada no Chrome Extensions Manifest V3 para auxiliar na contagem e no acompanhamento de registros dos fluxos de **Aprovação** e **Verificar** no PreserveHub.
+
+> **Estado:** projeto em desenvolvimento. Os ambientes listados refletem a configuração apresentada no código, mas precisam ser testados individualmente antes de qualquer distribuição.
 
 ## Objetivo
 
-O SAFE-PreserveHub registra interações identificadas nos fluxos de Aprovação e Verificar, permitindo acompanhar os totais diários e consultar ou exportar o histórico dos registros.
-
-O projeto continua em desenvolvimento. As funcionalidades descritas abaixo representam o comportamento implementado ou pretendido no código disponível; a validação integrada no PreserveHub ainda é necessária.
+Registrar interações relacionadas aos fluxos de Aprovação e Verificar, organizar o histórico por usuário e disponibilizar contadores e relatórios CSV para acompanhamento e auditoria.
 
 ## Funcionalidades
 
 - Organização dos dados por usuário identificado na página.
-- Contadores diários para as categorias **Aprovação** e **Verificar**, além do total diário.
-- Exibição de informações contextuais, como usuário, repositório e data, conforme os elementos identificados na página.
-- Exibição temporária de um contador flutuante na página.
-- Histórico com status, repositório arquivístico, identificador, data/hora e nome do usuário.
-- Exibição dos registros mais recentes no popup, com limite de cinco entradas quando aplicado pelo código.
-- Exportação do histórico completo disponível para CSV, com proposta de consolidação dos registros de todos os usuários.
-- Exportação diária para CSV, com seleção de uma data e proposta de consolidação dos registros de todos os usuários naquela data.
-- Detecção da ação de salvamento de metadados e análise dos campos **Repositório Físico** e **Localização Física** para classificar possíveis operações como Verificar.
-- Restrição da classificação **Verificar** a objetos cujo status identificado seja `DIGITALIZADO`.
-- Verificação de registros existentes por identificador e status, com tratamento da transição de Verificar para Aprovação conforme a implementação atual.
+- Contadores diários para Aprovação e Verificar e total do dia.
+- Exibição de informações contextuais, como usuário, repositório, identificador e data/hora, conforme os elementos encontrados na página.
+- Indicador flutuante temporário na página.
+- Histórico de registros com status, repositório arquivístico, identificador, data/hora e nome do usuário, conforme os dados disponíveis.
+- Exibição dos registros recentes no popup.
+- Exportação CSV do histórico completo, com a intenção de agregar os registros de todos os usuários armazenados.
+- Exportação CSV diária, filtrada pela data selecionada, com a intenção de considerar os registros de todos os usuários.
+- Seletor de datas com dias que possuem registros, em ordem decrescente.
+- Detecção de ações relacionadas ao salvamento de metadados e avaliação da categoria Verificar.
+- Restrição pretendida da classificação Verificar a objetos cujo status identificado seja `DIGITALIZADO`.
+- Tratamento da transição de Verificar para Aprovação e prevenção de duplicidades, ainda sujeitos a testes integrados.
 
-### Tratamento de falhas
+## Ambientes configurados
 
-- A leitura de `chrome.storage.local` diferencia a ausência inicial de dados de uma estrutura armazenada inválida.
-- Erros de leitura são registrados no console e propagados, em vez de serem tratados silenciosamente como um armazenamento vazio.
-- O contador visual não deve ser atualizado quando a rotina de gravação indicar falha.
-- Se o popup não conseguir ler o armazenamento, os contadores exibem `X` para sinalizar indisponibilidade, em vez de apresentar `0` como se a consulta tivesse sido concluída com sucesso.
+Os seguintes endereços foram adicionados ou mantidos na configuração do `manifest.json` e na lista de ambientes reconhecidos pelo popup:
 
-Esses comportamentos precisam ser confirmados por testes na extensão integrada.
+| Órgão ou ambiente | Endereço configurado |
+|---|---|
+| CEDAE | `https://preserve.cedae.com.br/` |
+| FAETEC | `http://preserve.faetec.rj.gov.br/` |
+| FAETEC | `https://preserve.faetec.rj.gov.br/` |
+| PRODERJ | `http://preserve.proderj.rj.gov.br/` |
+| DETRO | `http://preserve.detro.rj.gov.br/` |
+| Casa Civil | `http://preserve.casacivil.rj.gov.br/` |
+| SEDSDH | `http://preserve.sedsdh.rj.gov.br/` |
+| PROCON | `http://preserve.procon.rj.gov.br/` |
+| AGENERSA | `http://preserve/` |
+| DEGASE | `http://preserve.degase.rj.gov.br.local/` |
+| Monaco Preserve | `http://monaco-preserve.safeconversaodigital.com.br/` |
+| Monaco Preserve | `https://monaco-preserve.safeconversaodigital.com.br/` |
 
-### Limitações conhecidas
+**Importante:** essa lista documenta os endereços configurados, não uma confirmação de funcionamento em todos eles. Alguns podem depender de VPN, DNS interno, rede corporativa ou outras condições de acesso.
 
-- A identificação dos elementos da página, do usuário, do repositório e do registro precisa ser validada nos ambientes integrados.
-- O seletor usado para localizar o status `DIGITALIZADO` depende da estrutura real do DOM do PreserveHub.
-- A classificação Verificar, a prevenção de duplicidades e a transição para Aprovação precisam ser testadas com operações reais controladas.
-- A contagem diária depende do formato de data armazenado e da regra aplicada ao atualizar um registro durante a transição de status.
-- A compatibilidade com dados de versões anteriores ainda não está confirmada.
-- O botão de limpeza de dados não faz parte da interface atual do popup.
-- A implementação atual usa `chrome.storage.local`; os dados previamente mantidos no `localStorage` da página não devem ser considerados migrados automaticamente.
-- A exportação de auditoria entre usuários depende da consolidação correta dos históricos e da identificação do usuário de origem em cada linha do CSV; esse comportamento ainda precisa ser validado.
+### Considerações de segurança
 
-## Tecnologias
-
-- HTML
-- CSS
-- JavaScript
-- Chrome Extensions Manifest V3
-- APIs de extensão do navegador
-
-## Requisitos
-
-- Navegador compatível com extensões baseadas no Manifest V3.
-- Acesso a um dos ambientes configurados no `manifest.json`:
-  - `https://preserve.cedae.com.br/`
-  - `http://preserve.faetec.rj.gov.br/`
-  - `https://preserve.faetec.rj.gov.br/`
-- Permissões de extensão declaradas no `manifest.json`.
-- Arquivo `Logo_SAFE.png` e arquivos de ícone presentes nos caminhos referenciados pela extensão.
-
-> **Nota de segurança:** o endereço FAETEC por HTTP não usa TLS. Quando possível, prefira HTTPS e confirme se a permissão HTTP é necessária antes de distribuir a extensão.
-
-## Instalação para desenvolvimento
-
-1. Clone o repositório ou obtenha os arquivos do projeto.
-2. Abra a página de gerenciamento de extensões do navegador.
-3. Ative o modo de desenvolvedor.
-4. Selecione a opção para carregar uma extensão sem compactação.
-5. Selecione a pasta que contém o arquivo `manifest.json`.
-6. Acesse um ambiente compatível do PreserveHub e teste os fluxos com cuidado.
-7. Consulte o console do navegador e da página para identificar erros durante a validação.
-
-Os nomes das opções podem variar conforme o navegador.
-
-## Contagem diária e histórico
-
-A regra pretendida é calcular os contadores a partir dos registros do histórico cuja data corresponda ao dia atual:
-
-- **Aprovação:** registros do dia com status `Aprovação`.
-- **Verificar:** registros do dia com status `Verificar`.
-- **Total do dia:** soma das duas categorias.
-
-O popup pode limitar a visualização aos cinco registros mais recentes do dia. Esse limite visual não deve excluir registros antigos do histórico armazenado.
-
-Na implementação atual, os dados são organizados por usuário. A proposta de exportação geral consolida os históricos desses usuários para permitir uma visão de auditoria abrangente. Essa consolidação deve preservar a identificação do usuário responsável por cada registro.
+- Os endereços configurados por HTTP não usam TLS para proteger o tráfego entre o navegador e o servidor.
+- Sempre que o ambiente disponibilizar HTTPS, avalie a utilização do endereço seguro.
+- Mantenha apenas as permissões de host necessárias ao funcionamento da extensão.
+- Confirme que os endereços internos, especialmente `http://preserve/` e o hostname do DEGASE com sufixo `.local`, correspondem aos endereços realmente utilizados pelos usuários.
+- A disponibilidade de um endereço na configuração não garante que o navegador consiga acessá-lo ou que a estrutura da página seja compatível com os seletores da extensão.
 
 ## Exportação CSV
 
-O popup disponibiliza duas opções de exportação:
+O popup oferece duas modalidades de exportação:
 
-- **Relatório completo:** destina-se a reunir todos os registros disponíveis nos históricos de todos os usuários.
-- **Relatório por dia:** permite selecionar uma data e reunir os registros de todos os usuários associados àquela data.
+- **Relatório completo:** deve reunir os registros disponíveis no histórico de todos os usuários armazenados.
+- **Relatório diário:** deve reunir os registros de todos os usuários cuja data corresponda ao dia selecionado.
 
-A exportação diária deve utilizar a data de cada registro, conforme o formato efetivamente armazenado. Registros com formato diferente podem não aparecer no filtro diário e precisam ser tratados ou sinalizados de maneira apropriada.
+A exportação diária deve usar as datas existentes no histórico, sem repetir datas no seletor. Quando não houver datas disponíveis, os controles da exportação diária devem permanecer indisponíveis. A data selecionada é interpretada conforme o formato de data usado nos registros, atualmente esperado como `DD/MM/AAAA` no início de `dataHora`.
 
-As duas exportações devem manter uma estrutura consistente de colunas. Cada registro precisa permitir identificar, no mínimo, o usuário de origem, o identificador do registro, o status, o repositório e a data/hora, conforme os campos disponíveis na implementação.
+Os padrões esperados para os nomes dos arquivos são:
 
-As datas disponíveis no seletor devem ser únicas e aparecer em ordem decrescente, da mais recente para a mais antiga. Quando não houver registros, o seletor e o botão de exportação diária devem ficar desabilitados.
-
-A seleção inicial de data deve seguir a regra implementada no código. O comportamento esperado — por exemplo, escolher a data mais recente anterior ao dia atual, quando disponível — precisa ser confirmado no navegador.
-
-Os nomes de arquivo previstos são:
-
-| Tipo de relatório | Padrão do nome do arquivo |
+| Tipo | Padrão de nome |
 |---|---|
 | Completo | `Relatorio_Auditoria_<AAAA-MM-DD>.csv` |
-| Por dia | `Relatorio_Diario_<AAAA-MM-DD>.csv` |
+| Diário | `Relatorio_Diario_<AAAA-MM-DD>.csv` |
 
-No relatório completo, a data no nome representa o dia em que o arquivo foi gerado. No relatório diário, representa a data selecionada.
+No relatório completo, a data do nome representa o dia de geração do arquivo. No relatório diário, representa a data selecionada. Os nomes definitivos devem ser confirmados no código e em testes manuais.
 
-**Validações pendentes:** confirmar a consolidação de todos os usuários, a identificação do usuário em cada linha, o filtro diário, os nomes dos arquivos, a acentuação, os caracteres especiais, a quantidade de registros exportados e a proteção contra fórmulas em planilhas. Os nomes acima representam o padrão documental esperado e devem ser conferidos com os nomes efetivamente gerados pelo código.
+**Importante:** agregar históricos de vários usuários não garante, por si só, que cada linha do CSV identifique corretamente o usuário de origem. A consolidação, a identificação do usuário, o filtro por data e os nomes dos arquivos devem ser validados antes de considerar os relatórios adequados para auditoria.
 
-Na transição de Verificar para Aprovação, a data/hora do registro pode ser atualizada para o momento da aprovação. Esse comportamento pode alterar o dia ao qual o registro pertence e deve ser validado.
+## Contagem diária e histórico
+
+A regra pretendida é calcular os contadores com base nos registros do histórico cuja data corresponda ao dia atual:
+
+- **Aprovação:** registros do dia com status `Aprovação`.
+- **Verificar:** registros do dia com status `Verificar`.
+- **Total do dia:** soma das categorias.
+
+Os contadores e o histórico apresentados no popup continuam sendo individuais para o usuário atual. A intenção de consolidar todos os usuários se aplica aos relatórios CSV, e não à exibição individual dos contadores ou do histórico.
+
+Limites aplicados à exibição do histórico no popup não devem remover registros do histórico armazenado nem limitar indevidamente os relatórios CSV.
+
+Na transição de Verificar para Aprovação, a data/hora associada ao registro pode ser atualizada para o momento da aprovação. Esse comportamento pode alterar o dia ao qual o registro é atribuído e precisa ser validado.
 
 ## Armazenamento
 
-A implementação atual utiliza `chrome.storage.local` com a chave `dadosContadorPorUsuario`. `content.js` registra as ocorrências e `popup.js` consulta os dados armazenados nesse mecanismo.
+A implementação atual utiliza `chrome.storage.local` com a chave `dadosContadorPorUsuario`. O `content.js` registra ocorrências e o `popup.js` consulta os dados armazenados.
 
-A leitura valida a estrutura superior dos dados: uma chave ausente é tratada como armazenamento ainda vazio; valores `null`, tipos que não sejam objetos e arrays são tratados como estrutura inválida. Falhas de leitura são registradas e propagadas para que não sejam confundidas com ausência de registros.
-
-A rotina de registro também verifica o resultado informado pela função de gravação antes de atualizar o contador visual. Esse controle depende de `salvarDadosStorage()` retornar corretamente um indicador de sucesso ou falha.
-
-A estrutura lógica por usuário contém:
+A estrutura lógica por usuário contém, conforme a implementação:
 
 - `contadorAprovacao`: contador associado à categoria Aprovação.
 - `contadorVerificar`: contador associado à categoria Verificar.
 - `historico`: lista de registros associados ao usuário.
 
-Os registros do histórico podem conter os campos abaixo, conforme a identificação disponível na página:
+Os registros podem conter campos como:
 
 | Campo | Finalidade |
 |---|---|
 | `identificadorUnico` | Identifica o registro no PreserveHub. |
 | `dataHora` | Data e hora associadas à ocorrência. |
 | `repositorioArquivistico` | Repositório associado ao registro. |
-| `nomeUsuario` | Nome do usuário identificado na página. |
+| `nomeUsuario` | Nome do usuário identificado na página, quando disponível. |
 | `status` | Categoria da ação contabilizada. |
 
-A consolidação de históricos para exportação deve manter a associação entre cada registro e o usuário em cujo histórico ele foi armazenado. Se o próprio registro não contiver o nome do usuário, a rotina de consolidação deve acrescentar essa informação a partir da chave ou dos dados de usuário disponíveis.
+A ausência da chave de armazenamento deve ser diferenciada de uma estrutura inválida ou de uma falha de leitura. A compatibilidade com dados de versões anteriores não está confirmada; a mudança de `localStorage` da página para `chrome.storage.local` não implica migração automática.
 
-A mudança de `localStorage` da página para `chrome.storage.local` não garante migração automática dos dados antigos. A compatibilidade e a eventual necessidade de migração devem ser verificadas separadamente.
+## Requisitos
 
-O popup depende de uma aba do PreserveHub que atenda aos critérios definidos pela extensão e das permissões declaradas no manifesto.
+- Navegador compatível com extensões Manifest V3.
+- Acesso de rede aos ambientes pretendidos.
+- Permissões de host declaradas no manifesto.
+- Arquivos de ícone referenciados no manifesto presentes nos caminhos corretos.
+- Estrutura de página compatível com os seletores usados pela extensão.
+
+## Instalação para desenvolvimento
+
+1. Obtenha o repositório ou os arquivos do projeto.
+2. Abra a página `chrome://extensions` no Chrome ou a página equivalente no navegador compatível.
+3. Ative o modo de desenvolvedor.
+4. Escolha a opção para carregar uma extensão sem compactação.
+5. Selecione a pasta que contém `manifest.json`.
+6. Acesse um ambiente configurado e execute testes controlados.
+7. Consulte o console da extensão e o console da página durante a validação.
+
+Os nomes das opções podem variar conforme o navegador.
 
 ## Estrutura do projeto
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `manifest.json` | Define os metadados, as permissões, os ícones e a configuração da extensão. |
-| `content.js` | Identifica interações na página, valida condições de classificação e registra as ocorrências. |
-| `popup.html` | Define a interface do popup. |
-| `popup.js` | Consulta os dados armazenados, atualiza os contadores, apresenta o histórico, preenche o seletor de datas e exporta relatórios CSV completos ou diários. |
-| `Logo_SAFE.png` e arquivos em `icons/` | Recursos visuais referenciados pela interface e pelo manifesto. |
-| `README.md` | Documentação de instalação, funcionalidades e limitações. |
-| `CHANGELOG.md` | Registro das mudanças relevantes durante o desenvolvimento. |
+| `manifest.json` | Metadados, permissões, ícones e configuração da extensão. |
+| `content.js` | Identifica interações na página, avalia condições e registra ocorrências. |
+| `popup.html` | Interface do popup. |
+| `popup.js` | Consulta armazenamento, apresenta contadores e histórico, prepara os dados e executa as exportações CSV. |
+| `Logo_SAFE.png` e arquivos em `icons/` | Recursos visuais referenciados pelo projeto, conforme os caminhos reais. |
+| `README.md` | Instalação, funcionalidades, ambientes, limitações e procedimentos de validação. |
+| `CHANGELOG.md` | Histórico das alterações relevantes. |
 
-A lista de arquivos deve ser conferida com o conteúdo efetivamente versionado antes do commit.
+Confira os arquivos efetivamente versionados antes do commit.
 
 ## Versão
 
-A versão declarada no `manifest.json` nesta etapa é `1.0.0`. O número da versão não significa, por si só, que a extensão esteja pronta para produção.
+A versão declarada no manifesto nesta etapa é `1.0.0`. A atualização da documentação não altera o número da versão, e esse número não significa que o projeto esteja pronto para produção.
 
-## Estado do projeto
+## Validações pendentes
 
-Antes de uma distribuição, validar pelo menos:
+Antes da distribuição, validar:
 
-- A contagem diária e a consistência dos totais por categoria.
-- A persistência, leitura e integridade dos dados.
-- O tratamento de estruturas armazenadas inválidas e de falhas de leitura/gravação.
-- A confirmação de que `salvarDadosStorage()` informa corretamente sucesso ou falha.
-- A identificação do usuário, do repositório e do registro.
-- A identificação do status `DIGITALIZADO` no DOM real do PreserveHub.
-- A compatibilidade dos formatos de data com o filtro diário.
-- A apresentação do histórico e a exportação completa para CSV.
-- A consolidação dos registros de todos os usuários no relatório completo.
-- A exportação diária com registros de vários usuários na data selecionada.
-- A identificação correta do usuário de origem em cada linha exportada.
-- O comportamento do seletor quando não existem registros para exportar.
-- A integridade dos campos CSV, caracteres especiais e proteção contra fórmulas em planilhas.
-- A correspondência entre os nomes documentados e os nomes reais dos arquivos gerados.
-- O comportamento da seleção inicial de data, especialmente quando existem registros do dia atual e de dias anteriores.
-- O comportamento diante de interações repetidas.
-- A transição de Verificar para Aprovação sem duplicar registros.
-- A compatibilidade com dados existentes de versões anteriores.
-- O funcionamento integrado nos ambientes CEDAE e FAETEC.
-- A necessidade de acesso ao ambiente FAETEC por HTTP.
-- A ausência de erros relevantes no console.
+- Identificação correta do usuário, repositório, registro e status no DOM real.
+- Contagem diária e consistência entre contadores, histórico e indicador flutuante.
+- Persistência, leitura e integridade dos dados, incluindo falhas de leitura e gravação.
+- Retorno de sucesso ou falha da rotina de gravação e atualização visual somente após gravação bem-sucedida.
+- Classificação Verificar e localização do status `DIGITALIZADO`.
+- Prevenção de duplicidades e transição de Verificar para Aprovação.
+- Compatibilidade com dados existentes e eventual necessidade de migração.
+- Exportação completa com registros de vários usuários.
+- Exportação diária com vários usuários e filtro correto da data selecionada.
+- Identificação da origem/usuário em cada linha do CSV.
+- Cabeçalhos, separadores, acentos, caracteres especiais e proteção contra fórmulas em planilhas.
+- Nomes dos arquivos, incluindo a grafia `Relatorio_Auditoria` e a data correta para cada modalidade.
+- Datas vazias, datas disponíveis, ordenação e seleção inicial do seletor.
+- Reconhecimento correto de cada endereço no popup.
+- Correspondência entre `host_permissions`, `content_scripts.matches` e `ambientesSuportados`.
+- Funcionamento real em cada ambiente, incluindo os que dependem de VPN ou DNS interno.
+- Necessidade de acesso HTTP nos ambientes que não oferecem ou não utilizam HTTPS.
+- Ausência de erros relevantes no console durante os fluxos principais.
 
 ## Histórico de alterações
 
-Consulte o arquivo [CHANGELOG.md](CHANGELOG.md) para acompanhar a evolução do projeto.
+Consulte [CHANGELOG.md](CHANGELOG.md) para acompanhar a evolução do projeto.
