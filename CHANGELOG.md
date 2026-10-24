@@ -15,6 +15,9 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Indicador flutuante temporário com os totais contabilizados.
 - Organização dos dados de contagem e histórico por usuário.
 - Exportação do histórico disponível para CSV.
+- Exportação de relatório diário em CSV a partir de uma data selecionada no popup.
+- Seletor de datas com dias únicos que possuem registros, ordenados da data mais recente para a mais antiga.
+- Geração de nomes de arquivo distintos para os relatórios completo e diário.
 - Detecção do acionamento de salvamento de metadados para avaliar operações da categoria Verificar.
 - Verificação do status `DIGITALIZADO` como condição para permitir a classificação Verificar.
 
@@ -26,6 +29,9 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Propagação de erros de leitura do armazenamento, evitando tratá-los silenciosamente como dados vazios.
 - Verificação do resultado da gravação antes de atualizar o contador visual.
 - Exibição de `X` nos contadores do popup quando ocorre falha ao ler o armazenamento, evitando apresentar um zero que possa ser interpretado como resultado válido.
+- Reorganização da área de exportação no popup para separar o relatório completo do relatório por dia.
+- Extração da criação e do download do arquivo CSV para uma função reutilizável.
+- Normalização do nome do usuário e padronização da data usada nos nomes dos arquivos.
 - Manutenção da versão `1.0.0` no manifesto durante esta etapa de desenvolvimento.
 
 ### Corrigido
@@ -46,7 +52,10 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Exibição do histórico em ordem decrescente de data e hora.
 - Tratamento de falhas de leitura e gravação sem apresentar dados incorretos.
 - Compatibilidade com dados armazenados em versões anteriores e eventual necessidade de migração de `localStorage`.
-- Funcionamento da exportação CSV, incluindo acentos, caracteres especiais e proteção contra fórmulas em planilhas.
+- Funcionamento da exportação CSV completa e diária, incluindo acentos, caracteres especiais, cabeçalho, quantidade de registros e proteção contra fórmulas em planilhas.
+- Validação de que a exportação diária inclui somente registros cuja `dataHora` começa com a data selecionada no formato `DD/MM/AAAA`.
+- Validação da ordenação e unicidade das datas no seletor, além do comportamento da data selecionada por padrão.
+- Validação dos nomes de arquivo gerados para os dois tipos de relatório.
 - Compatibilidade do filtro diário com os formatos de data existentes.
 - Consistência entre os contadores do popup e do contador flutuante.
 - Funcionamento integrado nos ambientes CEDAE e FAETEC.

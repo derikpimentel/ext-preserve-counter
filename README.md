@@ -16,7 +16,8 @@ O projeto continua em desenvolvimento. As funcionalidades descritas abaixo repre
 - Exibição temporária de um contador flutuante na página.
 - Histórico com status, repositório arquivístico, identificador, data/hora e nome do usuário.
 - Exibição dos registros mais recentes no popup, com limite de cinco entradas quando aplicado pelo código.
-- Exportação do histórico disponível para CSV.
+- Exportação do histórico completo disponível para CSV.
+- Exportação diária para CSV, com seleção de uma data que possua registros.
 - Detecção da ação de salvamento de metadados e análise dos campos **Repositório Físico** e **Localização Física** para classificar possíveis operações como Verificar.
 - Restrição da classificação **Verificar** a objetos cujo status identificado seja `DIGITALIZADO`.
 - Verificação de registros existentes por identificador e status, com tratamento da transição de Verificar para Aprovação conforme a implementação atual.
@@ -82,7 +83,27 @@ A regra pretendida é calcular os contadores a partir dos registros do históric
 
 O popup pode limitar a visualização aos cinco registros mais recentes do dia. Esse limite visual não deve excluir registros antigos do histórico armazenado.
 
-A exportação CSV deve utilizar o histórico completo disponível, incluindo registros de dias anteriores. Esse comportamento deve ser confirmado por teste na versão integrada.
+A exportação CSV completa utiliza o histórico disponível do usuário atual, incluindo registros de dias anteriores. A exportação por dia filtra esse mesmo histórico para incluir somente os registros cuja data em `dataHora` corresponda à data selecionada. Ambas as opções utilizam a mesma estrutura de colunas CSV definida pela função `gerarCSV()`. Esses comportamentos devem ser confirmados por teste na versão integrada.
+
+### Exportação CSV
+
+O popup disponibiliza duas opções:
+
+- **Relatório completo:** exporta todos os registros disponíveis no histórico do usuário atual.
+- **Relatório por dia:** permite escolher uma data presente no histórico e exporta somente os registros dessa data. As datas disponíveis são únicas e aparecem em ordem decrescente, da mais recente para a mais antiga. Quando não há datas disponíveis, o seletor e o botão de exportação diária ficam desabilitados.
+
+Por padrão, o seletor tenta escolher a data mais recente anterior ao dia atual. Se não houver uma data anterior, seleciona a data mais recente disponível. Essa seleção inicial é um comportamento da implementação atual.
+
+Os arquivos são gerados em CSV com separador e campos definidos pela função `gerarCSV()`. Os nomes previstos são:
+
+| Tipo de relatório | Padrão do nome do arquivo |
+|---|---|
+| Completo | `Relatorio_Completo_<usuario>_<AAAA-MM-DD>.csv` |
+| Por dia | `Relatorio_<usuario>_<AAAA-MM-DD>.csv` |
+
+No relatório completo, a data no nome representa o dia em que o arquivo foi gerado. No relatório diário, representa a data selecionada. O nome do usuário é normalizado para uso no nome do arquivo. A exportação diária depende de os registros possuírem `dataHora` iniciada no formato `DD/MM/AAAA`; registros com formato diferente podem não aparecer no relatório do dia.
+
+A exportação por dia foi adicionada ao código compartilhado, mas ainda precisa ser validada no navegador, incluindo conteúdo exportado, nomes de arquivos, acentuação e datas.
 
 Na transição de Verificar para Aprovação, a data/hora do registro pode ser atualizada para o momento da aprovação. Esse comportamento pode alterar o dia ao qual o registro pertence e deve ser validado.
 
@@ -121,7 +142,7 @@ O popup depende de uma aba do PreserveHub que atenda aos critérios definidos pe
 | `manifest.json` | Define os metadados, as permissões, os ícones e a configuração da extensão. |
 | `content.js` | Identifica interações na página, valida condições de classificação e registra as ocorrências. |
 | `popup.html` | Define a interface do popup. |
-| `popup.js` | Consulta os dados armazenados, atualiza os contadores, apresenta o histórico e executa as ações disponíveis na interface. |
+| `popup.js` | Consulta os dados armazenados, atualiza os contadores, apresenta o histórico, preenche o seletor de datas e exporta relatórios CSV completos ou diários. |
 | `Logo_SAFE.png` e arquivos em `icons/` | Recursos visuais referenciados pela interface e pelo manifesto. |
 | `README.md` | Documentação de instalação, funcionalidades e limitações. |
 | `CHANGELOG.md` | Registro das mudanças relevantes durante o desenvolvimento. |
@@ -144,6 +165,9 @@ Antes de uma distribuição, validar pelo menos:
 - A identificação do status `DIGITALIZADO` no DOM real do PreserveHub.
 - A compatibilidade dos formatos de data com o filtro diário.
 - A apresentação do histórico e a exportação completa para CSV.
+- A exportação diária, incluindo datas disponíveis, data selecionada, conteúdo e nome do arquivo.
+- O comportamento da seleção inicial de data, especialmente quando existem registros do dia atual e de dias anteriores.
+- A integridade dos campos CSV, caracteres especiais e proteção contra fórmulas em planilhas.
 - O comportamento diante de interações repetidas.
 - A transição de Verificar para Aprovação sem duplicar registros.
 - A compatibilidade com dados existentes de versões anteriores.
