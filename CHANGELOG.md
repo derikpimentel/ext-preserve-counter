@@ -15,9 +15,10 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Indicador flutuante temporário com os totais contabilizados.
 - Organização dos dados de contagem e histórico por usuário.
 - Exportação do histórico disponível para CSV.
-- Exportação de relatório diário em CSV a partir de uma data selecionada no popup.
+- Proposta de exportação de relatório completo em CSV consolidando os registros de todos os usuários.
+- Proposta de exportação de relatório diário em CSV a partir de uma data selecionada, reunindo registros de todos os usuários.
 - Seletor de datas com dias únicos que possuem registros, ordenados da data mais recente para a mais antiga.
-- Geração de nomes de arquivo distintos para os relatórios completo e diário.
+- Padrões de nomes de arquivo distintos para os relatórios completo e diário.
 - Detecção do acionamento de salvamento de metadados para avaliar operações da categoria Verificar.
 - Verificação do status `DIGITALIZADO` como condição para permitir a classificação Verificar.
 
@@ -31,7 +32,7 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Exibição de `X` nos contadores do popup quando ocorre falha ao ler o armazenamento, evitando apresentar um zero que possa ser interpretado como resultado válido.
 - Reorganização da área de exportação no popup para separar o relatório completo do relatório por dia.
 - Extração da criação e do download do arquivo CSV para uma função reutilizável.
-- Normalização do nome do usuário e padronização da data usada nos nomes dos arquivos.
+- Normalização de nomes utilizados nos arquivos de relatório.
 - Manutenção da versão `1.0.0` no manifesto durante esta etapa de desenvolvimento.
 
 ### Corrigido
@@ -44,23 +45,27 @@ O formato segue uma organização inspirada no Keep a Changelog. As entradas des
 - Confirmar que `salvarDadosStorage()` retorna `true` em caso de sucesso e `false` em caso de falha.
 - Confirmar que a leitura e a gravação de `content.js` e `popup.js` utilizam a mesma chave e o mesmo mecanismo.
 - Validar o seletor de DOM usado para encontrar o status `DIGITALIZADO` nos ambientes reais do PreserveHub.
-- Identificação correta do registro, do usuário e do repositório.
-- Contagem correta das categorias Aprovação e Verificar.
-- Prevenção de duplicidades sem bloquear novas ocorrências legítimas.
-- Transição de Verificar para Aprovação sem duplicar o registro e com atualização coerente dos contadores.
-- Persistência, leitura e consistência dos contadores e do histórico.
-- Exibição do histórico em ordem decrescente de data e hora.
-- Tratamento de falhas de leitura e gravação sem apresentar dados incorretos.
-- Compatibilidade com dados armazenados em versões anteriores e eventual necessidade de migração de `localStorage`.
-- Funcionamento da exportação CSV completa e diária, incluindo acentos, caracteres especiais, cabeçalho, quantidade de registros e proteção contra fórmulas em planilhas.
-- Validação de que a exportação diária inclui somente registros cuja `dataHora` começa com a data selecionada no formato `DD/MM/AAAA`.
-- Validação da ordenação e unicidade das datas no seletor, além do comportamento da data selecionada por padrão.
-- Validação dos nomes de arquivo gerados para os dois tipos de relatório.
-- Compatibilidade do filtro diário com os formatos de data existentes.
-- Consistência entre os contadores do popup e do contador flutuante.
-- Funcionamento integrado nos ambientes CEDAE e FAETEC.
-- Necessidade de acesso HTTP no ambiente FAETEC.
-- Ausência de erros relevantes no console durante os testes funcionais.
+- Confirmar a identificação correta do registro, do usuário e do repositório.
+- Validar a contagem correta das categorias Aprovação e Verificar.
+- Testar a prevenção de duplicidades sem bloquear novas ocorrências legítimas.
+- Testar a transição de Verificar para Aprovação sem duplicar o registro e com atualização coerente dos contadores.
+- Validar a persistência, leitura e consistência dos contadores e do histórico.
+- Confirmar a exibição do histórico em ordem decrescente de data e hora.
+- Validar o tratamento de falhas de leitura e gravação sem apresentar dados incorretos.
+- Verificar a compatibilidade com dados armazenados em versões anteriores e eventual necessidade de migração de `localStorage`.
+- Confirmar que o relatório completo consolida os registros de todos os usuários.
+- Confirmar que o relatório diário consolida os registros de todos os usuários na data selecionada.
+- Confirmar que cada linha exportada identifica corretamente o usuário de origem, inclusive quando essa informação precisa ser obtida da estrutura que contém o histórico.
+- Validar o conteúdo CSV, os acentos, os caracteres especiais, o cabeçalho e a quantidade de registros exportados.
+- Verificar a proteção contra fórmulas em planilhas.
+- Validar que a exportação diária inclui somente registros cuja `dataHora` corresponde à data selecionada, considerando o formato `DD/MM/AAAA`.
+- Validar a ordenação e a unicidade das datas no seletor, além do comportamento da data selecionada por padrão.
+- Conferir os nomes efetivamente gerados para os relatórios completo e diário.
+- Confirmar o comportamento do seletor e do botão de exportação quando não existem registros.
+- Validar a consistência entre os contadores do popup e do contador flutuante.
+- Confirmar o funcionamento integrado nos ambientes CEDAE e FAETEC.
+- Avaliar a necessidade de acesso HTTP no ambiente FAETEC.
+- Confirmar a ausência de erros relevantes no console durante os testes funcionais.
 
 ## Versão declarada no manifesto
 

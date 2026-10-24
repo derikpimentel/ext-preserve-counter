@@ -16,8 +16,8 @@ O projeto continua em desenvolvimento. As funcionalidades descritas abaixo repre
 - Exibição temporária de um contador flutuante na página.
 - Histórico com status, repositório arquivístico, identificador, data/hora e nome do usuário.
 - Exibição dos registros mais recentes no popup, com limite de cinco entradas quando aplicado pelo código.
-- Exportação do histórico completo disponível para CSV.
-- Exportação diária para CSV, com seleção de uma data que possua registros.
+- Exportação do histórico completo disponível para CSV, com proposta de consolidação dos registros de todos os usuários.
+- Exportação diária para CSV, com seleção de uma data e proposta de consolidação dos registros de todos os usuários naquela data.
 - Detecção da ação de salvamento de metadados e análise dos campos **Repositório Físico** e **Localização Física** para classificar possíveis operações como Verificar.
 - Restrição da classificação **Verificar** a objetos cujo status identificado seja `DIGITALIZADO`.
 - Verificação de registros existentes por identificador e status, com tratamento da transição de Verificar para Aprovação conforme a implementação atual.
@@ -40,6 +40,7 @@ Esses comportamentos precisam ser confirmados por testes na extensão integrada.
 - A compatibilidade com dados de versões anteriores ainda não está confirmada.
 - O botão de limpeza de dados não faz parte da interface atual do popup.
 - A implementação atual usa `chrome.storage.local`; os dados previamente mantidos no `localStorage` da página não devem ser considerados migrados automaticamente.
+- A exportação de auditoria entre usuários depende da consolidação correta dos históricos e da identificação do usuário de origem em cada linha do CSV; esse comportamento ainda precisa ser validado.
 
 ## Tecnologias
 
@@ -83,27 +84,33 @@ A regra pretendida é calcular os contadores a partir dos registros do históric
 
 O popup pode limitar a visualização aos cinco registros mais recentes do dia. Esse limite visual não deve excluir registros antigos do histórico armazenado.
 
-A exportação CSV completa utiliza o histórico disponível do usuário atual, incluindo registros de dias anteriores. A exportação por dia filtra esse mesmo histórico para incluir somente os registros cuja data em `dataHora` corresponda à data selecionada. Ambas as opções utilizam a mesma estrutura de colunas CSV definida pela função `gerarCSV()`. Esses comportamentos devem ser confirmados por teste na versão integrada.
+Na implementação atual, os dados são organizados por usuário. A proposta de exportação geral consolida os históricos desses usuários para permitir uma visão de auditoria abrangente. Essa consolidação deve preservar a identificação do usuário responsável por cada registro.
 
-### Exportação CSV
+## Exportação CSV
 
-O popup disponibiliza duas opções:
+O popup disponibiliza duas opções de exportação:
 
-- **Relatório completo:** exporta todos os registros disponíveis no histórico do usuário atual.
-- **Relatório por dia:** permite escolher uma data presente no histórico e exporta somente os registros dessa data. As datas disponíveis são únicas e aparecem em ordem decrescente, da mais recente para a mais antiga. Quando não há datas disponíveis, o seletor e o botão de exportação diária ficam desabilitados.
+- **Relatório completo:** destina-se a reunir todos os registros disponíveis nos históricos de todos os usuários.
+- **Relatório por dia:** permite selecionar uma data e reunir os registros de todos os usuários associados àquela data.
 
-Por padrão, o seletor tenta escolher a data mais recente anterior ao dia atual. Se não houver uma data anterior, seleciona a data mais recente disponível. Essa seleção inicial é um comportamento da implementação atual.
+A exportação diária deve utilizar a data de cada registro, conforme o formato efetivamente armazenado. Registros com formato diferente podem não aparecer no filtro diário e precisam ser tratados ou sinalizados de maneira apropriada.
 
-Os arquivos são gerados em CSV com separador e campos definidos pela função `gerarCSV()`. Os nomes previstos são:
+As duas exportações devem manter uma estrutura consistente de colunas. Cada registro precisa permitir identificar, no mínimo, o usuário de origem, o identificador do registro, o status, o repositório e a data/hora, conforme os campos disponíveis na implementação.
+
+As datas disponíveis no seletor devem ser únicas e aparecer em ordem decrescente, da mais recente para a mais antiga. Quando não houver registros, o seletor e o botão de exportação diária devem ficar desabilitados.
+
+A seleção inicial de data deve seguir a regra implementada no código. O comportamento esperado — por exemplo, escolher a data mais recente anterior ao dia atual, quando disponível — precisa ser confirmado no navegador.
+
+Os nomes de arquivo previstos são:
 
 | Tipo de relatório | Padrão do nome do arquivo |
 |---|---|
-| Completo | `Relatorio_Completo_<usuario>_<AAAA-MM-DD>.csv` |
-| Por dia | `Relatorio_<usuario>_<AAAA-MM-DD>.csv` |
+| Completo | `Relatorio_Auditoria_<AAAA-MM-DD>.csv` |
+| Por dia | `Relatorio_Diario_<AAAA-MM-DD>.csv` |
 
-No relatório completo, a data no nome representa o dia em que o arquivo foi gerado. No relatório diário, representa a data selecionada. O nome do usuário é normalizado para uso no nome do arquivo. A exportação diária depende de os registros possuírem `dataHora` iniciada no formato `DD/MM/AAAA`; registros com formato diferente podem não aparecer no relatório do dia.
+No relatório completo, a data no nome representa o dia em que o arquivo foi gerado. No relatório diário, representa a data selecionada.
 
-A exportação por dia foi adicionada ao código compartilhado, mas ainda precisa ser validada no navegador, incluindo conteúdo exportado, nomes de arquivos, acentuação e datas.
+**Validações pendentes:** confirmar a consolidação de todos os usuários, a identificação do usuário em cada linha, o filtro diário, os nomes dos arquivos, a acentuação, os caracteres especiais, a quantidade de registros exportados e a proteção contra fórmulas em planilhas. Os nomes acima representam o padrão documental esperado e devem ser conferidos com os nomes efetivamente gerados pelo código.
 
 Na transição de Verificar para Aprovação, a data/hora do registro pode ser atualizada para o momento da aprovação. Esse comportamento pode alterar o dia ao qual o registro pertence e deve ser validado.
 
@@ -130,6 +137,8 @@ Os registros do histórico podem conter os campos abaixo, conforme a identifica�
 | `repositorioArquivistico` | Repositório associado ao registro. |
 | `nomeUsuario` | Nome do usuário identificado na página. |
 | `status` | Categoria da ação contabilizada. |
+
+A consolidação de históricos para exportação deve manter a associação entre cada registro e o usuário em cujo histórico ele foi armazenado. Se o próprio registro não contiver o nome do usuário, a rotina de consolidação deve acrescentar essa informação a partir da chave ou dos dados de usuário disponíveis.
 
 A mudança de `localStorage` da página para `chrome.storage.local` não garante migração automática dos dados antigos. A compatibilidade e a eventual necessidade de migração devem ser verificadas separadamente.
 
@@ -165,9 +174,13 @@ Antes de uma distribuição, validar pelo menos:
 - A identificação do status `DIGITALIZADO` no DOM real do PreserveHub.
 - A compatibilidade dos formatos de data com o filtro diário.
 - A apresentação do histórico e a exportação completa para CSV.
-- A exportação diária, incluindo datas disponíveis, data selecionada, conteúdo e nome do arquivo.
-- O comportamento da seleção inicial de data, especialmente quando existem registros do dia atual e de dias anteriores.
+- A consolidação dos registros de todos os usuários no relatório completo.
+- A exportação diária com registros de vários usuários na data selecionada.
+- A identificação correta do usuário de origem em cada linha exportada.
+- O comportamento do seletor quando não existem registros para exportar.
 - A integridade dos campos CSV, caracteres especiais e proteção contra fórmulas em planilhas.
+- A correspondência entre os nomes documentados e os nomes reais dos arquivos gerados.
+- O comportamento da seleção inicial de data, especialmente quando existem registros do dia atual e de dias anteriores.
 - O comportamento diante de interações repetidas.
 - A transição de Verificar para Aprovação sem duplicar registros.
 - A compatibilidade com dados existentes de versões anteriores.
